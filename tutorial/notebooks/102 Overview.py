@@ -109,8 +109,13 @@ tangent_dataframe[timestamp_column] = pd.to_datetime(pd.to_datetime(tangent_data
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC ### 2.1.1 class
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC The TimeSeries class creates a time series object that is ready to be analyzed by Tangent.  
-# MAGIC The purpose of this step is to validate the format of the data.  
+# MAGIC The purpose of this class is to validate the format of the data.  
 # MAGIC It requires a pandas dataframe with time series data and the user can optionally describe which column is the timestamp column and which columns are the group_keys for panel data.
 
 # COMMAND ----------
@@ -120,6 +125,34 @@ tw_timeseries = tw.TimeSeries(
     # timestamp_column = timestamp_column,
     # group_key_columns = []
     )
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.1.2 validate
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC This function validates the correctness of the dataset. It looks at column names and types, timestamps and datapoints to make sure this timeseries object will be able to pass through Tangent.
+
+# COMMAND ----------
+
+tw_timeseries.validate()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.1.3 validate_timestamps_alignment
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC This function validates the alignment of timestamps across all columns with respect to the sampling period. It makes sure the data situation in the time series is correctly setup.
+
+# COMMAND ----------
+
+tw_timeseries.validate_timestamps_alignment()
 
 # COMMAND ----------
 
