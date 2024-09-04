@@ -93,7 +93,7 @@ class visualization:
 
 # COMMAND ----------
 
-file_path = '/Workspace/Shared/Tutorial/data/belgian_electricity_grid.csv'
+file_path = '/Workspace'+dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get().rsplit('/', 2)[0]+'/data/belgian_electricity_grid.csv'
 tangent_dataframe = pd.read_csv(file_path)
 group_keys = []
 timestamp_column = "Timestamp"

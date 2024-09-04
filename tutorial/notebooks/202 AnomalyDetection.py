@@ -105,7 +105,7 @@ class visualization:
 
 # COMMAND ----------
 
-file_path = '/Workspace/Shared/Tutorial/data/gearbox.csv'
+file_path = '/Workspace'+dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get().rsplit('/', 2)[0]+'/data/gearbox.csv'
 tangent_dataframe = pd.read_csv(file_path)
 group_keys = []
 timestamp_column = "timestamp"
