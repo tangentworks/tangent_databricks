@@ -138,7 +138,9 @@ tw_timeseries = tw.TimeSeries(
 
 # COMMAND ----------
 
-tw_timeseries.validate()
+tw_timeseries.validate(
+    # inplace = True
+    )
 
 # COMMAND ----------
 
@@ -152,7 +154,9 @@ tw_timeseries.validate()
 
 # COMMAND ----------
 
-tw_timeseries.validate_timestamps_alignment()
+tw_timeseries.validate_timestamps_alignment(
+    # inplace = True
+)
 
 # COMMAND ----------
 
@@ -302,7 +306,9 @@ tw_forecasting = tw.Forecasting(
 
 # COMMAND ----------
 
-tw_forecasting.build_model()
+tw_forecasting.build_model(
+    # inplace = True
+)
 
 # COMMAND ----------
 
@@ -519,8 +525,8 @@ tw_autoforecasting_rca = tw_autoforecasting.rca()
 # COMMAND ----------
 
 tw_autoforecasting_result_table = tw_autoforecasting.result_table
-tw_autoforecasting_model = tw_autoforecasting.model
-tw_autoforecasting_configuration = tw_autoforecasting.configuration
+tw_autoforecasting_model = tw_autoforecasting.model.to_dict()
+tw_autoforecasting_configuration = tw_autoforecasting.configuration.to_dict()
 tw_autoforecasting_time_series = tw_autoforecasting.time_series
 tw_autoforecasting_rca_table = tw_autoforecasting.rca_table
 
@@ -724,8 +730,8 @@ tw_anomaly_detection_rca = tw_anomaly_detection.rca(
 # COMMAND ----------
 
 tw_anomaly_detection_result_table = tw_anomaly_detection.result_table
-tw_anomaly_detection_model = tw_anomaly_detection.model
-tw_anomaly_detection_configuration = tw_anomaly_detection.configuration
+tw_anomaly_detection_model = tw_anomaly_detection.model.to_dict()
+tw_anomaly_detection_configuration = tw_anomaly_detection.configuration.to_dict()
 tw_anomaly_detection_time_series = tw_anomaly_detection.time_series
 tw_anomaly_detection_rca_table = tw_anomaly_detection.rca_table
 
@@ -775,4 +781,15 @@ tw_features = tw_post_processing.features(response=tw_forecasting_model)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ## 3.3 Result table
 
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The result table function receives a tangent Forecasting or AutoForecasting object and transforms adds additional information to the result table. 
+# MAGIC With this, the user can quickly identify which timestamps are part of the train set, test set or production forecasts.
+
+# COMMAND ----------
+
+result_table = tw_post_processing.result_table(forecasting=tw_autoforecasting)
