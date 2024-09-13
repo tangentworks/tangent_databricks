@@ -165,19 +165,3 @@ tangent_auto_forecast_model
 
 # MAGIC %md
 # MAGIC This example shows the basic process for getting to results with Tangent. From here, there are many more capabilities of Tangent that can be leveraged with the Python Package which you can find in the next section.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC # Table of Contents
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC In this overview you will find the following notebooks that will guide you through the use of Tangent and all its capabilities.
-# MAGIC - __101 Introduction__:&emsp;&emsp;&emsp;&emsp;&emsp;Learn about Tangent and get started with this tutorial.
-# MAGIC - __102 Overview__:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp; Learn which classes and functions exist in the Python package and find example configurations.
-# MAGIC - __201 Forecasting__:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp; Try out this template to build a Tangent Forecasting model with example data.
-# MAGIC - __202 AnomalyDetection__:&emsp;&emsp;&nbsp;Try out this template to build a Tangent AnomalyDetection model with example data.
-# MAGIC - __203 AutoForecasting__:&emsp;&emsp;&emsp;&nbsp;Try out this template to build a Tangent AutoForecast with example data.
-# MAGIC

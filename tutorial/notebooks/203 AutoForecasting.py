@@ -88,12 +88,8 @@ class visualization:
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC #1. Data Processing
+# MAGIC #1. Data
 
 # COMMAND ----------
 
@@ -149,6 +145,7 @@ auto_forecasting_configuration = {
         # 'predictor_offsets': 'common',
         # 'allow_offsets': True,
         # 'max_offsets_depth': 0,
+        # 'offset_limit': 0,
         # 'normalization': True,
         # 'max_feature_count': 20,
         # 'transformations': [
@@ -197,13 +194,17 @@ tangent_auto_forecast_model = tangent_auto_forecast.model.to_dict()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #4. Results Processing
+# MAGIC #4. Results
+
+# COMMAND ----------
+
+tangent_auto_forecast.configuration.build_configuration.target_column
 
 # COMMAND ----------
 
 properties_df = tw.PostProcessing().properties(response=tangent_auto_forecast_model)
 features_df = tw.PostProcessing().features(response=tangent_auto_forecast_model)
-results_df = tw.PostProcessing().results_table(df=tangent_results_table,configuration=auto_forecasting_configuration)
+results_df = tw.PostProcessing().result_table(forecasting=tangent_auto_forecast)
 
 # COMMAND ----------
 
