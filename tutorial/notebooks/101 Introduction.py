@@ -109,6 +109,10 @@ tw_timeseries = tw.TimeSeries(data=tangent_dataframe,timestamp_column='timestamp
 
 # COMMAND ----------
 
+tw_timeseries.validate()
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC Tangent works by combining a dataset and a configuration, telling the engine what to do with the dataset, together to generate results.  
 # MAGIC The next step is to bring both together in an object to validate the setup of the experiment with Tangent. Here we will use the Autoforecasting capabilities and use the default configuration settings by leaving the configuration empty.  
@@ -146,7 +150,7 @@ tangent_auto_forecast_model = tw_autoforecasting.model.to_dict()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The predictions are returned as a Pandas dataframe
+# MAGIC The predictions are returned as a Pandas dataframe. This table contains the timestamps for which forecasted values are generated as well as additional information such as the date & time perspective from which predictions were made and other usefull perspectives.
 
 # COMMAND ----------
 
@@ -155,7 +159,7 @@ tangent_results_table
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The model is returned as a JSON.
+# MAGIC The model is returned as a JSON. This object can be used with other functionalities of Tangent to generate new predictions or gain new insights in the results.
 
 # COMMAND ----------
 

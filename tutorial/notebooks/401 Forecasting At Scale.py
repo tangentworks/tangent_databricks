@@ -48,7 +48,7 @@ class visualization:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #1. Data Processing
+# MAGIC #1. Data
 
 # COMMAND ----------
 
@@ -236,7 +236,7 @@ tw_forecasting_predicts = tw_spark.run(jobs=spark_jobs)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # 4. Results Processing
+# MAGIC # 4. Results
 
 # COMMAND ----------
 
@@ -309,5 +309,5 @@ visualization.feature_importance(v_data)
 # COMMAND ----------
 
 fig = px.bar(tangent_properties_df[tangent_properties_df['importance']>0], x='id', y="rel_importance", color="name", barmode = 'stack',hover_data=group_keys)
-fig.update_layout(height=800, width=900, title_text="Evolution")
+fig.update_layout(height=800, width=1200, title_text="Evolution")
 fig.show()

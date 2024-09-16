@@ -304,7 +304,7 @@ visualization.feature_importance(v_data)
 # COMMAND ----------
 
 fig = px.bar(tangent_properties_df[tangent_properties_df['importance']>0], x='id', y="rel_importance", color="name", barmode = 'stack',hover_data=group_keys)
-fig.update_layout(height=800, width=900, title_text="Evolution")
+fig.update_layout(height=800, width=1200, title_text="Evolution")
 fig.show()
 
 # COMMAND ----------

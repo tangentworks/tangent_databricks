@@ -201,7 +201,6 @@ tangent_forecast_model = tangent_forecast.model.to_dict()
 
 tangent_predictions = tangent_forecast.forecast(
     configuration=predict_configuration,
-    
     )
 
 # COMMAND ----------
