@@ -42,7 +42,8 @@ class visualization:
         color_map = {'training':'green','testing':'red','production':'goldenrod'}
         fig.add_trace(go.Scatter(x=df['timestamp'], y=df['target'], name='target',line=dict(color='black')), row=1, col=1)
         for forecasting_type in df['type'].unique():
-            fig.add_trace(go.Scatter(x=df['timestamp'], y=df[forecasting_type], name=forecasting_type,line=dict(color=color_map[forecasting_type])), row=1, col=1)
+            v_data = df[df['type']==forecasting_type].copy()
+            fig.add_trace(go.Scatter(x=v_data['timestamp'], y=v_data['forecast'], name=forecasting_type,line=dict(color=color_map[forecasting_type])), row=1, col=1)
         fig.update_layout(height=500, width=1000, title_text="Results")
         fig.show()
 
@@ -101,7 +102,7 @@ class visualization:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #1. Data Processing
+# MAGIC #1. Data
 
 # COMMAND ----------
 
@@ -234,12 +235,12 @@ detect_df = tangent_anomaly_detection.detect()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #4. Results Processing
+# MAGIC #4. Results
 
 # COMMAND ----------
 
-properties_df = tw.PostProcessing().properties(response=tangent_anomaly_detection_model)
-features_df = tw.PostProcessing().features(response=tangent_anomaly_detection_model)
+properties_df = tw.PostProcessing().properties(model=tangent_anomaly_detection_model)
+features_df = tw.PostProcessing().features(model=tangent_anomaly_detection_model)
 
 # COMMAND ----------
 

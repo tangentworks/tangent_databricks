@@ -42,7 +42,8 @@ class visualization:
         color_map = {'training':'green','testing':'red','production':'goldenrod'}
         fig.add_trace(go.Scatter(x=df['timestamp'], y=df['target'], name='target',line=dict(color='black')), row=1, col=1)
         for forecasting_type in df['type'].unique():
-            fig.add_trace(go.Scatter(x=df['timestamp'], y=df[forecasting_type], name=forecasting_type,line=dict(color=color_map[forecasting_type])), row=1, col=1)
+            v_data = df[df['type']==forecasting_type].copy()
+            fig.add_trace(go.Scatter(x=v_data['timestamp'], y=v_data['forecast'], name=forecasting_type,line=dict(color=color_map[forecasting_type])), row=1, col=1)
         fig.update_layout(height=500, width=1000, title_text="Results")
         fig.show()
 
@@ -89,7 +90,7 @@ class visualization:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #1. Data Processing
+# MAGIC #1. Data
 
 # COMMAND ----------
 
@@ -131,6 +132,7 @@ build_model_configuration = {
     # 'target_offsets': 'combined',
     # 'predictor_offsets': 'common',
     # 'allow_offsets': True,
+    # 'offset_limit': 0,
     # 'max_offsets_depth': 0,
     # 'normalization': True,
     # 'max_feature_count': 20,
@@ -206,12 +208,13 @@ tangent_predictions = tangent_forecast.forecast(
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #4. Results Processing
+# MAGIC #4. Results
 
 # COMMAND ----------
 
-properties_df = tw.PostProcessing().properties(response=tangent_forecast_model)
-features_df = tw.PostProcessing().features(response=tangent_forecast_model)
+properties_df = tw.PostProcessing().properties(model=tangent_forecast_model)
+features_df = tw.PostProcessing().features(model=tangent_forecast_model)
+result_table_df = tw.PostProcessing().result_table(forecasting=tangent_forecast)
 
 # COMMAND ----------
 
@@ -220,16 +223,7 @@ features_df = tw.PostProcessing().features(response=tangent_forecast_model)
 
 # COMMAND ----------
 
-def visualize_predictions(df):
-    fig = splt.make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
-    fig.add_trace(go.Scatter(x=df['timestamp'], y=df['target'], name='target',line=dict(color='black')), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['timestamp'], y=df['forecast'], name='forecast',line=dict(color='goldenrod')), row=1, col=1)
-    fig.update_layout(height=500, width=1000, title_text="Results")
-    fig.show()
-
-# COMMAND ----------
-
-visualize_predictions(tangent_predictions)
+visualization.predictions(result_table_df)
 
 # COMMAND ----------
 

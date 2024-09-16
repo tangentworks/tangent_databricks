@@ -180,9 +180,7 @@ class user_defined:
         time_series.validate()
         tangent_auto_forecast = tw.AutoForecasting(time_series=time_series, configuration=configuration)
         tangent_auto_forecast.run()
-        result_table = tangent_auto_forecast.result_table
-        model = tangent_auto_forecast.model.to_dict()
-        return {'result_table':result_table,'model':model}
+        return tangent_auto_forecast
 
 # COMMAND ----------
 
@@ -205,17 +203,17 @@ all_properties,all_features,all_result_tables = [],[],[]
 for tangent_job in tangent_jobs:
     job_id = tangent_job['id']
     result = [f['result'] for f in tw_parallel_auto_forecasting if f['id']==job_id][0]
-    model = result['model']
+    model = result.model.to_dict()
     
-    properties_df = tw.PostProcessing().properties(response=model)
+    properties_df = tw.PostProcessing().properties(model=model)
     properties_df['id'] = job_id
     all_properties.append(properties_df)
 
-    features_df = tw.PostProcessing().features(response=model)
+    features_df = tw.PostProcessing().features(model=model)
     features_df['id'] = job_id
     all_features.append(features_df)
 
-    result_table = result['result_table']
+    result_table = tw.PostProcessing().result_table(result)
     result_table['id'] = job_id
     all_result_tables.append(result_table)
 
@@ -236,6 +234,9 @@ tangent_features_df = pd.concat(all_features).merge(tangent_jobs_df,on='id',how=
 i = 2
 tangent_job = tangent_jobs[i]
 tangent_job_parameters = tangent_job['parameters']
+tangent_job_parameters
+
+# COMMAND ----------
 
 v_data = tangent_result_tables_df.loc[(tangent_result_tables_df[list(tangent_job_parameters)] == pd.Series(tangent_job_parameters)).all(axis=1)].drop(columns=group_keys)
 v_actuals = tangent_dataframe.loc[(tangent_dataframe[list(tangent_job_parameters)] == pd.Series(tangent_job_parameters)).all(axis=1)].drop(columns=group_keys)
@@ -243,16 +244,12 @@ visualization.predictions(v_data,v_actuals,target_column=target_column,timestamp
 
 # COMMAND ----------
 
-tangent_job = tangent_jobs[i]
-tangent_job_parameters = tangent_job['parameters']
 v_data = tangent_properties_df.loc[(tangent_properties_df[list(tangent_job_parameters)] == pd.Series(tangent_job_parameters)).all(axis=1)].drop(columns=group_keys)
 print(tangent_job_parameters)
 visualization.predictor_importance(v_data)
 
 # COMMAND ----------
 
-tangent_job = tangent_jobs[i]
-tangent_job_parameters = tangent_job['parameters']
 v_data = tangent_features_df.loc[(tangent_features_df[list(tangent_job_parameters)] == pd.Series(tangent_job_parameters)).all(axis=1)].drop(columns=group_keys)
 print(tangent_job_parameters)
 visualization.feature_importance(v_data)

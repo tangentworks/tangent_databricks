@@ -66,7 +66,7 @@ class visualization:
 
         default_result = default['result']
         default_model = default_result.model.to_dict()
-        default_properties = tw.PostProcessing().properties(response=default_model)
+        default_properties = tw.PostProcessing().properties(model=default_model)
         default_properties['job_name'] = 'default'
         
         all_properties = []
@@ -74,7 +74,7 @@ class visualization:
             job_name = job['job_name']
             result = job['result']
             model = result.model.to_dict()
-            properties = tw.PostProcessing().properties(response=model)
+            properties = tw.PostProcessing().properties(model=model)
             properties['job_name'] = job_name
             all_properties.append(properties)
 
@@ -87,7 +87,7 @@ class visualization:
 
         default_result = default['result']
         default_model = default_result.model.to_dict()
-        default_features = tw.PostProcessing().features(response=default_model)
+        default_features = tw.PostProcessing().features(model=default_model)
         default_features['job_name'] = 'default'
              
         fig = splt.make_subplots(rows=len(jobs)+1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
@@ -100,7 +100,7 @@ class visualization:
             job_name = job['job_name']
             result = job['result']
             model = result.model.to_dict()
-            features = tw.PostProcessing().features(response=model)
+            features = tw.PostProcessing().features(model=model)
             features['job_name'] = job_name
 
             trace_id = i+2

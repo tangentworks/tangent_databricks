@@ -252,11 +252,11 @@ for tangent_job in tangent_jobs:
     result = [f['result'] for f in tw_anomaly_detection_build_models if f['id']==job_id][0]
     model = result.model.to_dict()
     
-    properties_df = tw.PostProcessing().properties(response=model)
+    properties_df = tw.PostProcessing().properties(model=model)
     properties_df['id'] = job_id
     all_properties.append(properties_df)
 
-    features_df = tw.PostProcessing().features(response=model)
+    features_df = tw.PostProcessing().features(model=model)
     features_df['id'] = job_id
     all_features.append(features_df)
 
@@ -306,7 +306,3 @@ visualization.feature_importance(v_data)
 fig = px.bar(tangent_properties_df[tangent_properties_df['importance']>0], x='id', y="rel_importance", color="name", barmode = 'stack',hover_data=group_keys)
 fig.update_layout(height=800, width=1200, title_text="Evolution")
 fig.show()
-
-# COMMAND ----------
-
-

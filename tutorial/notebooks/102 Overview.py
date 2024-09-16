@@ -764,7 +764,7 @@ tw_post_processing = tw.PostProcessing()
 
 # COMMAND ----------
 
-tw_properties = tw_post_processing.properties(response=tw_forecasting_model)
+tw_properties = tw_post_processing.properties(model=tw_forecasting_model)
 
 # COMMAND ----------
 
@@ -779,7 +779,7 @@ tw_properties = tw_post_processing.properties(response=tw_forecasting_model)
 
 # COMMAND ----------
 
-tw_features = tw_post_processing.features(response=tw_forecasting_model)
+tw_features = tw_post_processing.features(model=tw_forecasting_model)
 
 # COMMAND ----------
 

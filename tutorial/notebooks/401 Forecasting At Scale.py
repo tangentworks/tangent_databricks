@@ -246,11 +246,11 @@ for tangent_job in tangent_jobs:
     tw_forecasting_build_model_result = [f['result'] for f in tw_forecasting_build_models if f['id']==job_id][0]
     model = tw_forecasting_build_model_result.model.to_dict()
     
-    properties_df = tw.PostProcessing().properties(response=model)
+    properties_df = tw.PostProcessing().properties(model=model)
     properties_df['id'] = job_id
     all_properties.append(properties_df)
 
-    features_df = tw.PostProcessing().features(response=model)
+    features_df = tw.PostProcessing().features(model=model)
     features_df['id'] = job_id
     all_features.append(features_df)
 
