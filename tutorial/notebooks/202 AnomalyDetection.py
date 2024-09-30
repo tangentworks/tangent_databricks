@@ -5,13 +5,34 @@
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC In this tutorial, you will learn to build an AnomalyDetection model with Tangent, generate detections using this model and use additional capabilities.  
+# MAGIC The AnomalyDetection module exists to have controle over all the steps in the model building & detection process. The main steps are:
+# MAGIC 1. building a model using historical training data.
+# MAGIC 2. making an inference using this model.
+# MAGIC
+# MAGIC To show the capabilities of the AnomalyDetection module, we will use an example dataset from an industrial use case.  
+# MAGIC The goal is to monitor the state of a gearbox system and prevent damage by detecting anomalies using historical sensor measurements.
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC #0. Setup
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC First, import the tangent_works package and other supporting libraries.
 
 # COMMAND ----------
 
 import tangent_works as tw
 import pandas as pd
 import numpy as np
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC To visualize the results of this exercise, the following visualization functions can be used.
 
 # COMMAND ----------
 
@@ -35,16 +56,6 @@ class visualization:
         fig = px.treemap(df, path=[px.Constant("all"), 'model', 'feature'], values='importance',hover_data='beta',color='feature')
         fig.update_traces(root_color="lightgrey")
         fig.update_layout(height=600, width=1000, title_text="Features",margin = dict(t=50, l=25, r=25, b=25))
-        fig.show()
-
-    def predictions(df):
-        fig = splt.make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
-        color_map = {'training':'green','testing':'red','production':'goldenrod'}
-        fig.add_trace(go.Scatter(x=df['timestamp'], y=df['target'], name='target',line=dict(color='black')), row=1, col=1)
-        for forecasting_type in df['type'].unique():
-            v_data = df[df['type']==forecasting_type].copy()
-            fig.add_trace(go.Scatter(x=v_data['timestamp'], y=v_data['forecast'], name=forecasting_type,line=dict(color=color_map[forecasting_type])), row=1, col=1)
-        fig.update_layout(height=500, width=1000, title_text="Results")
         fig.show()
 
     def data(df,timestamp,target,predictors):
@@ -106,6 +117,13 @@ class visualization:
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC The dataset that will be used in this notebook is called "gearbox".  
+# MAGIC It contains historical sensor data of a gearbox system such as temperature measurements from different parts of the equipment and power applied to the system.  
+# MAGIC In the cell below, this dataset is preprocessed and made ready for use with Tangent.
+
+# COMMAND ----------
+
 file_path = '/Workspace'+dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get().rsplit('/', 2)[0]+'/data/gearbox.csv'
 tangent_dataframe = pd.read_csv(file_path)
 group_keys = []
@@ -118,12 +136,29 @@ tangent_dataframe
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC In time series analysis, when exploring a dataset, it is best practice to visualize the data and learn which patterns might exists in the data that we want Tangent to identify automatically.  
+# MAGIC In this graph, the target column "GEARBEARINGTEMP" is visualized above and the additional explanatory variables or predictors are visualized below.  
+# MAGIC Notice that all measurements are aligned with the target column since they were updated and available at the same time.
+
+# COMMAND ----------
+
 visualization.data(df=tangent_dataframe,timestamp=timestamp_column,target=target_column,predictors=predictors)
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC #2. Configuration
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The first step in the anomaly detection process using the Tangent is model building. To describe to Tangent, how it should build a model using this dataset, we can use the configuration below.  
+# MAGIC Many settings can be applied, however Tangent is designed to automate as much as possible. When a parameter is not set, Tangent will assume default settings.  
+# MAGIC In that case, Tangent will decided how to apply certain settings for you. You can find the final result in the AnomalyDetection object after model building.  
+# MAGIC
+# MAGIC In this example, default settings will be used. The only specific configuration will be to showcase the different kind of detection layers. By default, the residual and moving average are applied but there are other types of detection layers available that we will use in the example below.  
+# MAGIC Tangent will automatically recognize the most likely sampling rate, in this case quarter hourly, and build a time series anomaly detection model automatically. 
 
 # COMMAND ----------
 

@@ -152,7 +152,7 @@ visualization.data(df=tangent_dataframe,timestamp=timestamp_column,target=target
 
 # MAGIC %md
 # MAGIC The first step in the forecasting process using the Forecasting module is model building. To describe to Tangent, how it should build a model using this dataset, we can use the configuration below.  
-# MAGIC Many settings can be applied, however Tangent is designed to automate as much as possible. When the setting is not used, Tangent will assume default settings.  
+# MAGIC Many settings can be applied, however Tangent is designed to automate as much as possible. When a parameter is not set, Tangent will assume default settings.  
 # MAGIC In that case, Tangent will decided how to apply certain settings for you. You can find the final result in the forecasting object after model building.  
 # MAGIC
 # MAGIC In this example, default settings will be used. The only configuration will be the forecasting horizon, which is here set from sample+1 until sample+7.  
