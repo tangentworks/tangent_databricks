@@ -258,8 +258,26 @@ build_anomaly_detection_configuration = {
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC In this section, the following steps take place:
+# MAGIC 1. Create and validate a Tangent time series object
+# MAGIC 2. Create an AnomalyDetection object by combining a time series and model building configuration.
+# MAGIC 3. Send a model building request by applying the "build_model" function.
+# MAGIC 4. Send a detect request by applying the "detect" function.
+
+# COMMAND ----------
+
 time_series = tw.TimeSeries(data=tangent_dataframe)
+time_series.validate()
+
+# COMMAND ----------
+
+
 tangent_anomaly_detection = tw.AnomalyDetection(time_series=time_series,configuration=build_anomaly_detection_configuration)
+
+
+# COMMAND ----------
+
 tangent_anomaly_detection.build_model()
 tangent_anomaly_detection_model = tangent_anomaly_detection.model.to_dict()
 
@@ -274,6 +292,12 @@ detect_df = tangent_anomaly_detection.detect()
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC The model can now post processed into tables that can either be stored, analyzed or visualized by the user.  
+# MAGIC Below, the properties and features of the model are extracted.
+
+# COMMAND ----------
+
 properties_df = tw.PostProcessing().properties(model=tangent_anomaly_detection_model)
 features_df = tw.PostProcessing().features(model=tangent_anomaly_detection_model)
 
@@ -284,11 +308,41 @@ features_df = tw.PostProcessing().features(model=tangent_anomaly_detection_model
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC All results can be easily visualized using the provided templates.  
+# MAGIC The top graph shows:
+# MAGIC - The __"target"__ or historical sensor measurements.
+# MAGIC - The __"normal_behavior"__ which are in sample results that lie on top of the training data.  
+# MAGIC These values show the expected behavior of the target signal according to Tangent. 
+# MAGIC - __"Anomalies"__ from the detection layers indicating points of interest in the target.
+# MAGIC
+# MAGIC The bottom graph shows several detection layers that are based on the differences between the target signal and the normal behavior. These layers offer different perspectives, and different ways to identify anomalies. 
+# MAGIC
+# MAGIC When exploring the graph, we can recognize that an effective normal behavior model seems to have been identified by Tangent. The rising detection layers at the end clearly identify increasingly anomalous values near the end of the dataset that, in this case, can be leveraged to detect faults in the gearbox before a breakdown event.
+
+# COMMAND ----------
+
 visualization.detections(detect_df)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC In order to understand which patterns Tangent has identified to achieve this normal behavior, we can visualize several levels of insights.  
+# MAGIC
+# MAGIC Firstly, the properties, which show the relative importance of each of the columns of the dataset.  
+# MAGIC Here, we learn which columns contributed a lot of predictive value to the model and where a lot of useful features have been found.  
+# MAGIC If there are predictors from which no features were included in the model building by Tangent, then they will be listed here as well.
+
+# COMMAND ----------
+
 visualization.predictor_importance(properties_df)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Secondly, the actual features from the Tangent model can be visualized as well.  
+# MAGIC In this treemap graph, the relative importance of each of the features from each model in the model zoo can be quickly identified. In this example, only 1 model exists in the model zoo.
+# MAGIC These are the predictive patterns that are hidden within the data that Tangent has automatically extracted from the data.  
 
 # COMMAND ----------
 
@@ -298,6 +352,17 @@ visualization.feature_importance(features_df)
 
 # MAGIC %md
 # MAGIC #6. Root Cause Analysis
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC An extended capability of Tangent is to apply Root Cause Analysis (RCA) to the predictions.  
+# MAGIC With RCA, we can combine the information from both the features in the model as well as the predictions and apply this to a single timestamp in the dataset.  
+# MAGIC
+# MAGIC A Tangent model is a cumulative addition of identified features that each explain a bit more of the variance in the target signal.  
+# MAGIC We can visualize the addition of these features to the model and learn which features contribute to either useful movements or possibly unexpected movements in the prediction.
+# MAGIC
+# MAGIC The example below first extracts from Tangent how each and every single prediction is built up. This information is processed and from there, the user can select a specific timestamp to analyze and choose a window around that timestamp for additional context.
 
 # COMMAND ----------
 
@@ -313,6 +378,13 @@ for model_index in sorted(tangent_rca.keys()):
 rca_tables_df = pd.concat(rca_tables)
 rca_tables_df['type'] = np.where(rca_tables_df['variable'].str.contains('term '),'term',np.where(rca_tables_df['variable'].str.contains('yhat '),'yhat','other'))
 rca_tables_df['term'] = np.where(rca_tables_df['type'].isin(['term','yhat']),rca_tables_df['variable'].str.replace('term ','').str.replace('yhat ',''),np.nan)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Move the slider from left to right to add the different features into the model to eventually come to the final predicted value.  
+# MAGIC The black line are the original measured values. The orange line shows the RCA values that dynamically moves as features are added.  
+# MAGIC The red line shows the eventual prediction that will correspond with the orange line when the slider is moved entirely to the right. 
 
 # COMMAND ----------
 

@@ -249,13 +249,20 @@ predict_configuration = {
 # MAGIC 1. Create and validate a Tangent time series object
 # MAGIC 2. Create a Forecasting object by combining a time series and model building configuration.
 # MAGIC 3. Send a model building request by applying the "build_model" function.
-# MAGIC 4. Send a forecast request by applying "forecast" function and using the predict configuration.
+# MAGIC 4. Send a forecast request by applying the "forecast" function and using the predict configuration.
 
 # COMMAND ----------
 
 time_series = tw.TimeSeries(data= tangent_dataframe, timestamp_column=timestamp_column)
 time_series.validate()
+
+# COMMAND ----------
+
 tangent_forecast = tw.Forecasting(time_series=time_series,configuration = build_model_configuration)
+
+# COMMAND ----------
+
+
 tangent_forecast.build_model()
 
 # COMMAND ----------

@@ -161,6 +161,26 @@ tw_timeseries.validate_timestamps_alignment(
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC ### 2.1.4 impute
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC coming soon ...
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.1.5 resample
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC coming soon ...
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC ## 2.2 Forecasting
 
 # COMMAND ----------
