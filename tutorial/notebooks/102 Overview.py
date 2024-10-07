@@ -44,10 +44,10 @@ dataset = {'columns':['timestamp', 'target', 'predictor', 'label'],
     ['2022-08-01 09:00:00', 9808, 433.25, 0],
     ['2022-08-01 10:00:00', 9847, 385.88, 0],
     ['2022-08-01 11:00:00', 9719, 344.81, 0],
-    ['2022-08-01 12:00:00', 9566, 310.97, 0],
-    ['2022-08-01 13:00:00', 9584, 317.82, 0],
-    ['2022-08-01 14:00:00', 9412, 344.65, 0],
-    ['2022-08-01 15:00:00', 9375, 397.27, 0],
+    ['2022-08-01 12:00:00', 9566, 310.97, ],
+    ['2022-08-01 13:00:00', 9584, 317.82, ],
+    ['2022-08-01 14:00:00', 9412, 344.65, ],
+    ['2022-08-01 15:00:00', 9375, 397.27, ],
     ['2022-08-01 16:00:00', 9477, 421.24, 0],
     ['2022-08-01 17:00:00', 9279, 434.33, 0],
     ['2022-08-01 18:00:00', 8943, 473.33, 0],
@@ -161,22 +161,67 @@ tw_timeseries.validate_timestamps_alignment(
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2.1.4 impute
+# MAGIC ### 2.1.4 time_scaling
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC coming soon ...
+# MAGIC With this function the user can rescale the data to a desired sampling rate and user several aggregation methods to be applied across all variables as well as individually.
+
+# COMMAND ----------
+
+time_scaling_configuration = {
+    'time_scale': {
+        'base_unit': 'hour',
+        'value': 2
+        },
+    'aggregations': {
+        'common': 'mean',
+        # 'individual': [
+        #     {
+        #         'column_name':'string',
+        #         'value':'mean'
+        #         }
+        #     ]
+        }
+}
+
+# COMMAND ----------
+
+tw_timeseries_time_scaled =  tw_timeseries.time_scaling(configuration=time_scaling_configuration)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2.1.5 resample
+# MAGIC ### 2.1.5 imputation
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC coming soon ...
+# MAGIC With this function the user can impute missing values in the data and fill gaps in the records.
+# MAGIC
+
+# COMMAND ----------
+
+imputation_configuration = {
+    'common': {
+        'type': 'linear',
+        'max_gap_length': 6
+        },
+    # 'individual': [
+    #     {
+    #         'column_name': 'string',
+    #         'value': {
+    #             'type': 'linear',
+    #             'max_gap_length': 0
+    #             }
+    #         }
+    #     ]
+}
+
+# COMMAND ----------
+
+tw_timeseries_imputed =  tw_timeseries.imputation(configuration=imputation_configuration)
 
 # COMMAND ----------
 

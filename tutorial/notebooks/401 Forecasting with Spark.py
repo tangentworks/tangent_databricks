@@ -1,6 +1,16 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Tangent Databricks Tutorial - Forecasting At Scale
+# MAGIC # Tangent Databricks Tutorial - Forecasting with Spark
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC In this tutorial, you will learn to build forecasting models with Tangent, at scale, by leveraging Spark.  
+# MAGIC
+# MAGIC We will send multiple requests to Tangent in parallel using Spark RDD's. This will allow Databricks to scale the Tangent custom Docker container to handle all the requests. Databricks will then manage all these individual jobs automatically and send results back when all are finished. Dependent on the number of workers are available in the cluster, more jobs can be processed simultaneously. 
+# MAGIC
+# MAGIC To show these capabilities, we will use an example dataset from a retail sales forecasting use case from Walmart.  
+# MAGIC The goal is to forecast sales of several products across different stores 7 days ahead using historical sales data and other explanatory variables.
 
 # COMMAND ----------
 
@@ -9,9 +19,19 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC First, import the tangent_works package and other supporting libraries.
+
+# COMMAND ----------
+
 import tangent_works as tw
 import pandas as pd
 import uuid
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC To visualize the results of this exercise, the following visualization functions can be used.
 
 # COMMAND ----------
 
@@ -45,10 +65,24 @@ class visualization:
         fig.update_layout(height=600, width=1000, title_text="Features",margin = dict(t=50, l=25, r=25, b=25))
         fig.show()
 
+    def predictions(df):
+        fig = splt.make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
+        fig.add_trace(go.Scatter(x=df['timestamp'], y=df['target'], name='target',line=dict(color='black')), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df['timestamp'], y=df['forecast'], name='forecast',line=dict(color='goldenrod')), row=1, col=1)
+        fig.update_layout(height=500, width=1000, title_text="Results")
+        fig.show()
+
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC #1. Data
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The dataset that will be used in this notebook is called walmart_weather_smart.  
+# MAGIC It contains historical daily sales data and several data points of weather information.  
+# MAGIC In the cell below, this dataset is preprocessed and made ready for use with Tangent. Important here is to define the group_keys which are used to identify the individual timeseries in the larger dataset. Here store_nbr & item_nbr indicate the individual product sales at each store. There are 43 different stores &  39 products resulting in 122 combinations of store_nbr & item_nbr. For this example we choose to exclude the sales of 2 specific stores.  
 
 # COMMAND ----------
 
@@ -81,9 +115,12 @@ tangent_dataframe
 
 # COMMAND ----------
 
-# manually choose one of 102 combinations 
+# MAGIC %md
+# MAGIC Below we visualize the time series of 1 store/product combination. 
+
+# COMMAND ----------
+
 i = 0
-# display the combination
 v_data = tangent_dataframe.loc[(tangent_dataframe[list(combinations[i])] == pd.Series(combinations[i])).all(axis=1)]
 visualization.data(df=v_data,timestamp=timestamp_column,target=target_column,predictors=predictors)
 
@@ -91,6 +128,11 @@ visualization.data(df=v_data,timestamp=timestamp_column,target=target_column,pre
 
 # MAGIC %md
 # MAGIC #2. Configuration
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Now that we have a dataset to analyze, let's describe the general configuration that will be applied to each of the individual model builds in this exercise. Both a configuration for model building and for prediction are specified. Default settings are used and a forecasting horizon of 7 samples (or days in this case) is set.
 
 # COMMAND ----------
 
@@ -173,7 +215,19 @@ predict_configuration = {
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC In the Tangent Python Databricks package, there exists the SparkParallelProcessing class which allows the user to send jobs to Tangent in parallel. The forecasting process can be parallelized in different ways. In this example we show how to run in parallel each step in the forecasting process seperately and accross all the combinations.  
+# MAGIC
+# MAGIC Please note that a function can also be created that handles these invididual steps in series and then this function could be ran in parallel. That remains up to the preference of the user. 
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC ## Jobs
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC First, to identify each job and link the resulting information back to our use case, tangent_job objects are created containing a unique ID and user specified parameters. These parameters can be anything that the user wants to share to identify the individual jobs. Here the parameters are the combinations of store and item number.
 
 # COMMAND ----------
 
@@ -185,6 +239,11 @@ for combination in combinations[:]:
 
 # MAGIC %md
 # MAGIC ## TimeSeries
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The user can choose the create each of the timeseries objects in parallel rather than having it run in a simple loop. This becomes more relevant when the number of jobs becomes larger.
 
 # COMMAND ----------
 
@@ -203,6 +262,11 @@ tw_parallel_time_series = tw_spark.run(jobs=spark_jobs)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC The next step in the forecasting process is to create forecasting objects by combining the timeseries' with model building configurations.
+
+# COMMAND ----------
+
 spark_jobs = []
 for tw_time_series in tw_parallel_time_series:
     spark_jobs.append((tw_time_series['id'],tw.Forecasting,{'time_series':tw_time_series['result'],'configuration':build_model_configuration}))
@@ -212,6 +276,11 @@ tw_parallel_Forecasting = tw_spark.run(jobs=spark_jobs)
 
 # MAGIC %md
 # MAGIC ## Model Building
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Now, the jobs are ready to be sent to Tangent to build forecasting models. The build_model functions are sent to Spark and Databricks will start building multiple models simultaneously. 
 
 # COMMAND ----------
 
@@ -227,6 +296,11 @@ tw_forecasting_build_models = tw_spark.run(jobs=spark_jobs)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC When all model building jobs are finished, predictions can be made using these models. These can also be sent to Tangent in parallel.
+
+# COMMAND ----------
+
 spark_jobs = []
 tw_spark = tw.SparkParallelProcessing()
 for tw_forecasting_build_model in tw_forecasting_build_models:
@@ -237,6 +311,11 @@ tw_forecasting_predicts = tw_spark.run(jobs=spark_jobs)
 
 # MAGIC %md
 # MAGIC # 4. Results
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Now, Tangent has generated all results and they need to be processed. The following loop extracts the properties, features and predictions from all tangent_jobs. This step could be parallelized as well if required. 
 
 # COMMAND ----------
 
@@ -276,38 +355,59 @@ tangent_predictions_df['MAPE'] = abs(tangent_predictions_df['error']/tangent_pre
 
 # COMMAND ----------
 
-def visualize_predictions(df):
-    fig = splt.make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
-    fig.add_trace(go.Scatter(x=df['timestamp'], y=df['target'], name='target',line=dict(color='black')), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['timestamp'], y=df['forecast'], name='forecast',line=dict(color='goldenrod')), row=1, col=1)
-    fig.update_layout(height=500, width=1000, title_text="Results")
-    fig.show()
+# MAGIC %md
+# MAGIC Now, the user can inspect the results from the parallel exercise. Below, a single combination of store_nbr and item_nbr is selected from the list and those results are visualized below.
+
+# COMMAND ----------
 
 i = 5
 tangent_job = tangent_jobs[i]
 tangent_job_parameters = tangent_job['parameters']
 
-v_data = tangent_predictions_df.loc[(tangent_predictions_df[list(tangent_job_parameters)] == pd.Series(tangent_job_parameters)).all(axis=1)].drop(columns=group_keys)
-visualize_predictions(v_data)
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## predictions
 
 # COMMAND ----------
 
-tangent_job = tangent_jobs[i]
-tangent_job_parameters = tangent_job['parameters']
+v_data = tangent_predictions_df.loc[(tangent_predictions_df[list(tangent_job_parameters)] == pd.Series(tangent_job_parameters)).all(axis=1)].drop(columns=group_keys)
+visualization.predictions(v_data)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## properties
+
+# COMMAND ----------
+
 v_data = tangent_properties_df.loc[(tangent_properties_df[list(tangent_job_parameters)] == pd.Series(tangent_job_parameters)).all(axis=1)].drop(columns=group_keys)
 print(tangent_job_parameters)
 visualization.predictor_importance(v_data)
 
 # COMMAND ----------
 
-tangent_job = tangent_jobs[i]
-tangent_job_parameters = tangent_job['parameters']
+# MAGIC %md
+# MAGIC ## features
+
+# COMMAND ----------
+
 v_data = tangent_features_df.loc[(tangent_features_df[list(tangent_job_parameters)] == pd.Series(tangent_job_parameters)).all(axis=1)].drop(columns=group_keys)
 print(tangent_job_parameters)
 visualization.feature_importance(v_data)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ## All properties
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The properties of all combinations could also be outlined next to each other and compared. In this example that could provide insights about which combinations of store and item sales are affected by certain predictors.
+
+# COMMAND ----------
+
 fig = px.bar(tangent_properties_df[tangent_properties_df['importance']>0], x='id', y="rel_importance", color="name", barmode = 'stack',hover_data=group_keys)
-fig.update_layout(height=800, width=1200, title_text="Evolution")
+fig.update_layout(height=800, width=1200, title_text="All properties")
 fig.show()

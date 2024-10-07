@@ -21,9 +21,9 @@ In this overview you will find the notebooks that will guide you through the use
   - __301 Mathematical Settings__:  
 &emsp;Learn about the different mathematical settings that can be applied in Tangent.  
 - ___Working at scale:___
-  - __401 Forecasting At Scale__:  
+  - __401 Forecasting with Spark__:  
 &emsp;Learn to combine Spark and Tangent to build Forecasting models at scale.
-  - __402 AnomalyDetection At Scale__:  
+  - __402 AnomalyDetection with Spark__:  
 &emsp;Learn to combine Spark and Tangent to build AnomalyDetection models at scale.
-  - __403 AutoForecasting At Scale__:  
+  - __403 AutoForecasting with Spark__:  
 &emsp;Learn to combine Spark and Tangent to build AutoForecasting models at scale.
