@@ -224,7 +224,7 @@ for combination in combinations[:]:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Below shows an example user defined function that will be process by Spark and Tangent.
+# MAGIC Below shows an example user defined function that will be processed by Spark and Tangent.
 
 # COMMAND ----------
 

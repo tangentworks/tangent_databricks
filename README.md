@@ -27,3 +27,10 @@ In this overview you will find the notebooks that will guide you through the use
 &emsp;Learn to combine Spark and Tangent to build AnomalyDetection models at scale.
   - __403 AutoForecasting with Spark__:  
 &emsp;Learn to combine Spark and Tangent to build AutoForecasting models at scale.
+- ___Results analysis:___
+  - __501 Backtesting__:  
+&emsp;Learn how to perform a backtest with Tangent.
+  - __502 Simulation__:  
+&emsp;Learn about simulations and how they provide a complete insight in the performance of Tangent.
+
+version 1.0.0

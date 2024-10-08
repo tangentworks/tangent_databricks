@@ -177,7 +177,6 @@ build_model_configuration = {
     # 'target_offsets': 'combined',
     # 'predictor_offsets': 'common',
     # 'allow_offsets': True,
-    # 'offset_limit': 0,
     # 'max_offsets_depth': 0,
     # 'normalization': True,
     # 'max_feature_count': 20,

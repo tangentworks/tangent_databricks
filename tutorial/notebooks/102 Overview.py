@@ -272,7 +272,6 @@ build_model_configuration = {
     # 'predictor_offsets': 'common',
     # 'allow_offsets': True,
     # 'max_offsets_depth': 0,
-    # 'offset_limit': 0,
     # 'normalization': True,
     # 'max_feature_count': 20,
     # 'transformations': [
@@ -493,7 +492,6 @@ auto_forecasting_configuration = {
         # 'predictor_offsets': 'common',
         # 'allow_offsets': True,
         # 'max_offsets_depth': 0,
-        # 'offset_limit': 0,
         # 'normalization': True,
         # 'max_feature_count': 20,
         # 'transformations': [
@@ -628,7 +626,7 @@ build_anomaly_detection_configuration = {
         # 'holiday_column:':'str',
         # 'target_offsets':'combined',
         # 'allow_offsets':True,
-        # 'offset_limit':0,
+        # 'max_offsets_depth': 0,
         # 'normalization':True,
         # 'max_feature_count':20,
         # 'transformations': [

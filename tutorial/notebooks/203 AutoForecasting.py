@@ -195,7 +195,6 @@ auto_forecasting_configuration = {
         # 'predictor_offsets': 'common',
         # 'allow_offsets': True,
         # 'max_offsets_depth': 0,
-        # 'offset_limit': 0,
         # 'normalization': True,
         # 'max_feature_count': 20,
         # 'transformations': [
