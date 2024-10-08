@@ -83,14 +83,6 @@ class visualization:
 
 # COMMAND ----------
 
-fig = splt.make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
-fig.add_trace(go.Scatter(x=tangent_dataframe[timestamp_column], y=tangent_dataframe[target_column], name='target',line=dict(color='black')), row=1, col=1)
-fig.add_trace(go.Scatter(x=simulation_results_df['timestamp'], y=simulation_results_df['forecast'], name='simulation',line=dict(color='goldenrod')), row=1, col=1)
-fig.update_layout(height=500, width=1000, title_text="Results")
-fig.show()
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC Next, we can introduce some logic that will help with the simulation process.
 
@@ -219,12 +211,12 @@ auto_forecasting_configuration = {
 
 # MAGIC %md
 # MAGIC Using the AutoForecasting with Spark process we can define a number of Tangent jobs that each represent a forecast executed from a different point of view in the past.  
-# MAGIC Here we defined a testing period between '2021-10-16 23:00:00' and '2022-01-15 23:00:00' where jobs will be executed on a daily basis at 23:00 between those two dates.   
-# MAGIC This will result in 92 unique models and predictions that will be calculated simultaneously.
+# MAGIC Here we defined a testing period between '2021-12-17 23:00:00' and '2022-01-15 23:00:00' where jobs will be executed on a daily basis at 23:00 between those two dates.   
+# MAGIC This will result in 30 unique models and predictions that will be calculated simultaneously.
 
 # COMMAND ----------
 
-pov_datetimes = pd.date_range(start='2021-10-16 23:00:00',end='2022-01-15 23:00:00',freq='D')
+pov_datetimes = pd.date_range(start='2021-12-17 23:00:00',end='2022-01-15 23:00:00',freq='D')
 tangent_jobs = []
 for pov_datetime in pov_datetimes:
     tangent_jobs.append({'id':str(uuid.uuid4()),'parameters':{'pov_datetime':str(pov_datetime)}})
@@ -252,7 +244,7 @@ class user_defined:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Here the simulation is executed and 92 jobs will be processed simultaneously. The spark_jobs object is created and it combines the general configuration with datasets that are based on the original dataframe, but are processed together with the alignment_records to create a representative dataset from the point of view of a date in the past.
+# MAGIC Here the simulation is executed and 92 jobs will be processed simultaneously. The spark_jobs object is created and it combines the general configuration with datasets that are based on the original dataframe, but are processed together with the alignment_records to create a representative dataset from the point of view of a date in the past. Depending on the underlying resources of the Databricks cluster this can take a bit of time, this process can be accelerated if required.
 
 # COMMAND ----------
 
@@ -358,7 +350,7 @@ fig.show()
 
 backtest_configuration = {
     'preprocessing': {
-        'training_rows': [{'from': '2021-01-20 00:00:00','to': '2021-10-16 23:00:00'}],
+        'training_rows': [{'from': '2021-01-20 00:00:00','to': '2021-12-17 23:00:00'}],
         'prediction_rows': [{'from': '2021-01-20 00:00:00','to': '2022-01-18 23:00:00'}],
     },
     'engine': {

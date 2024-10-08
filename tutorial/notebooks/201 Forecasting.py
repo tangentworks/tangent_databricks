@@ -123,7 +123,7 @@ class visualization:
 # COMMAND ----------
 
 file_path = '/Workspace'+dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get().rsplit('/', 2)[0]+'/data/inventory_management.csv'
-tangent_dataframe = pd.read_csv(file_path)
+tangent_dataframe = pd.read_csv(file_path).head(949)
 group_keys = []
 timestamp_column = "Date"
 target_column = "Sales"
