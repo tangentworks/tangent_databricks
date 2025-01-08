@@ -24,7 +24,7 @@
 # MAGIC For the user this means they can focus on bringing together useful input data to run through Tangent, and use the resulting predictions and models for solving their use cases and generating insights.  
 # MAGIC The Tangent core capabilities have been packaged inside a Docker container. This container can then be installed on your Databricks cluster allowing you to leverage the power of Databricks and Tangent together.
 # MAGIC
-# MAGIC To learn more about the inner workings of Tangent, you can find more information in the general documentation here: __#TODO__
+# MAGIC To learn more about the inner workings of Tangent, you can find more information in the general documentation here: https://docs.tangent.works/UM/
 
 # COMMAND ----------
 
@@ -95,6 +95,10 @@ target_column = "target"
 predictors = [s for s in list(tangent_dataframe.columns) if s not in group_keys + [timestamp_column, target_column]]
 tangent_dataframe = tangent_dataframe[group_keys + [timestamp_column, target_column] + predictors].sort_values(by=group_keys + [timestamp_column]).reset_index(drop=True)
 tangent_dataframe[timestamp_column] = pd.to_datetime(pd.to_datetime(tangent_dataframe[timestamp_column]).dt.strftime("%Y-%m-%d %H:%M:%S"))
+
+# COMMAND ----------
+
+tangent_dataframe
 
 # COMMAND ----------
 

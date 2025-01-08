@@ -16,7 +16,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #0. Setup
+# MAGIC # 0. Setup
 
 # COMMAND ----------
 
@@ -111,7 +111,7 @@ class visualization:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #1. Data
+# MAGIC # 1. Data
 
 # COMMAND ----------
 
@@ -146,7 +146,7 @@ visualization.data(df=tangent_dataframe,timestamp=timestamp_column,target=target
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #2. Configuration
+# MAGIC # 2. Configuration
 
 # COMMAND ----------
 
@@ -239,7 +239,7 @@ predict_configuration = {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #3. Tangent
+# MAGIC # 3. Tangent
 
 # COMMAND ----------
 
@@ -261,7 +261,6 @@ tangent_forecast = tw.Forecasting(time_series=time_series,configuration = build_
 
 # COMMAND ----------
 
-
 tangent_forecast.build_model()
 
 # COMMAND ----------
@@ -282,7 +281,7 @@ tangent_forecast_model = tangent_forecast.model.to_dict()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #4. Results
+# MAGIC # 4. Results
 
 # COMMAND ----------
 
@@ -299,7 +298,7 @@ result_table_df = tw.PostProcessing().result_table(forecasting=tangent_forecast)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #5. Visualization
+# MAGIC # 5. Visualization
 
 # COMMAND ----------
 
@@ -350,7 +349,7 @@ visualization.feature_importance(features_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #6. Root Cause Analysis
+# MAGIC # 6. Root Cause Analysis
 
 # COMMAND ----------
 

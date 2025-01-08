@@ -16,7 +16,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #0. Setup
+# MAGIC # 0. Setup
 
 # COMMAND ----------
 
@@ -113,7 +113,7 @@ class visualization:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #1. Data
+# MAGIC # 1. Data
 
 # COMMAND ----------
 
@@ -148,7 +148,7 @@ visualization.data(df=tangent_dataframe,timestamp=timestamp_column,target=target
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #2. Configuration
+# MAGIC # 2. Configuration
 
 # COMMAND ----------
 
@@ -254,7 +254,7 @@ build_anomaly_detection_configuration = {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #3. Tangent
+# MAGIC # 3. Tangent
 
 # COMMAND ----------
 
@@ -272,9 +272,7 @@ time_series.validate()
 
 # COMMAND ----------
 
-
 tangent_anomaly_detection = tw.AnomalyDetection(time_series=time_series,configuration=build_anomaly_detection_configuration)
-
 
 # COMMAND ----------
 
@@ -288,7 +286,7 @@ detect_df = tangent_anomaly_detection.detect()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #4. Results
+# MAGIC # 4. Results
 
 # COMMAND ----------
 
@@ -304,7 +302,7 @@ features_df = tw.PostProcessing().features(model=tangent_anomaly_detection_model
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #5. Visualization
+# MAGIC # 5. Visualization
 
 # COMMAND ----------
 
@@ -351,7 +349,7 @@ visualization.feature_importance(features_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #6. Root Cause Analysis
+# MAGIC # 6. Root Cause Analysis
 
 # COMMAND ----------
 
@@ -399,3 +397,7 @@ visualization.rca(
     rca_timestamp=rca_timestamp,
     window=window
     )
+
+# COMMAND ----------
+
+
