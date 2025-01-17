@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Tangent Databricks Example - Forecasting
+# MAGIC # Tangent Databricks Example - Periodic Rebuilding Simulation
 
 # COMMAND ----------
 
