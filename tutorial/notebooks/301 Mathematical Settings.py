@@ -10,7 +10,6 @@
 # MAGIC There are both mathematical and context settings in the Tangent configurations. In this tutorial, we cover the mathematical settings. These settings will have an impact on the mathematical transformations that Tangent applies in the core solution to identify predictive value.
 # MAGIC
 # MAGIC This notebook shows what mathematical settings exist, how to use them and why or when to use them. The following settings are covered:
-# MAGIC - target_column
 # MAGIC - holiday_column
 # MAGIC - target_offsets
 # MAGIC - allow_offsets
@@ -32,9 +31,13 @@
 
 # COMMAND ----------
 
-import tangent_works as tw
+import tangent_works
 import pandas as pd
 from copy import deepcopy
+
+# COMMAND ----------
+
+tw = tangent_works.TangentWorks()
 
 # COMMAND ----------
 
@@ -47,13 +50,19 @@ from copy import deepcopy
 class configuration_tutorial:
     def auto_forecast(
         job_name,
-        time_series,
+        dataset,
         configuration,
         ):
-        tangent_auto_forecast = tw.AutoForecasting(time_series=time_series, configuration=configuration)
-        tangent_auto_forecast.run()
+        tangent_auto_forecast = tw.forecasting.auto_forecast(
+            configuration = configuration,
+            dataset = dataset
+        )
         return {
             'job_name':job_name,
+            'inputs':{
+                'dataset':dataset,
+                'configuration':configuration
+                },
             'result':tangent_auto_forecast
             }
 
@@ -72,10 +81,10 @@ class visualization:
     def compare_predictions(jobs,default):
 
         default_result = default['result']
-        default_timestamp_column = default_result.time_series.timestamp
-        default_df = default_result.time_series.dataframe
+        default_df = default['inputs']['dataset']
+        default_timestamp_column = default_df.columns[0]
         default_target_column = default_result.model.model_zoo.target_name
-        default_result_table = default_result.result_table
+        default_result_table = default_result.predictions
 
         fig = splt.make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
         fig.add_trace(go.Scatter(x=default_df[default_timestamp_column], y=default_df[default_target_column], name=default_target_column,line=dict(color='black')), row=1, col=1)
@@ -84,23 +93,23 @@ class visualization:
         for job in jobs:
             job_name = job['job_name']
             result = job['result']
-            df = result.time_series.dataframe
-            timestamp_column = result.time_series.timestamp
+            df = job['inputs']['dataset']
+            timestamp_column = df.columns[0]
             target_column = result.model.model_zoo.target_name
-            result_table = result.result_table
+            result_table = result.predictions
             
             fig.add_trace(go.Scatter(x=result_table['timestamp'], y=result_table['forecast'], name=job_name), row=1, col=1)
             if default_target_column!=target_column:
                 fig.add_trace(go.Scatter(x=df[timestamp_column], y=df[target_column], name=target_column), row=1, col=1)
 
         fig.update_layout(height=500, width=1000, title_text="Predictions")
-        fig.show()
+        fig.show(renderer='databricks')
 
     def compare_properties(jobs,default):
 
         default_result = default['result']
         default_model = default_result.model.to_dict()
-        default_properties = tw.PostProcessing().properties(model=default_model)
+        default_properties = tw.insights.properties(model=default_model)
         default_properties['job_name'] = 'default'
         
         all_properties = []
@@ -108,20 +117,20 @@ class visualization:
             job_name = job['job_name']
             result = job['result']
             model = result.model.to_dict()
-            properties = tw.PostProcessing().properties(model=model)
+            properties = tw.insights.properties(model=model)
             properties['job_name'] = job_name
             all_properties.append(properties)
 
         v_data = pd.concat([default_properties]+all_properties)
         fig = px.bar(v_data[v_data['importance']>0], x='rel_importance', y="job_name", color="name", barmode = 'stack',orientation='h')
         fig.update_layout(height=500, width=1000, title_text="Properties")
-        fig.show()
+        fig.show(renderer='databricks')
 
     def compare_features(jobs,default):
 
         default_result = default['result']
         default_model = default_result.model.to_dict()
-        default_features = tw.PostProcessing().features(model=default_model)
+        default_features = tw.insights.features(model=default_model)
         default_features['job_name'] = 'default'
              
         fig = splt.make_subplots(rows=len(jobs)+1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
@@ -134,7 +143,7 @@ class visualization:
             job_name = job['job_name']
             result = job['result']
             model = result.model.to_dict()
-            features = tw.PostProcessing().features(model=model)
+            features = tw.insights.features(model=model)
             features['job_name'] = job_name
 
             trace_id = i+2
@@ -144,7 +153,7 @@ class visualization:
             fig.update_yaxes(title_text=job_name, row=trace_id, col=1)
         fig.update_layout(height=max(500,(len(jobs)+1)*200), width=1000, title_text="Features")
         fig.update_layout(barmode='stack')
-        fig.show()
+        fig.show(renderer='databricks')
 
 # COMMAND ----------
 
@@ -175,15 +184,6 @@ predictors = [s for s in list(tangent_dataframe.columns) if s not in group_keys 
 tangent_dataframe = tangent_dataframe[group_keys + [timestamp_column, target_column] + predictors].sort_values(by=group_keys + [timestamp_column]).reset_index(drop=True)
 tangent_dataframe[timestamp_column] = pd.to_datetime(pd.to_datetime(tangent_dataframe[timestamp_column]).dt.strftime("%Y-%m-%d %H:%M:%S"))
 tangent_dataframe
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC Then, a Tangent time series object is created that will be reused throughout this notebook.
-
-# COMMAND ----------
-
-tw_timeseries = tw.TimeSeries(data = tangent_dataframe)
 
 # COMMAND ----------
 
@@ -282,42 +282,16 @@ job_name = 'default_settings'
 # ------------------------------------------------------------------------------------------------------------
 configuration = deepcopy(auto_forecasting_configuration)
 # ------------------------------------------------------------------------------------------------------------
-default_job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+default_job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The graph below show the production forecast generated using default settings next to the historical target values.
+# MAGIC The graph below shows the production forecast generated using default settings next to the historical target values.
 
 # COMMAND ----------
 
 visualization.compare_predictions(jobs=[],default=default_job_run)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## target_column
-
-# COMMAND ----------
-
-job_name = 'change_target_column'
-# ------------------------------------------------------------------------------------------------------------
-configuration = deepcopy(auto_forecasting_configuration)
-configuration['engine']['target_column'] = predictors[0]
-# ------------------------------------------------------------------------------------------------------------
-job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
-
-# COMMAND ----------
-
-visualization.compare_predictions(jobs=[job_run],default=default_job_run)
-
-# COMMAND ----------
-
-visualization.compare_properties(jobs=[job_run],default=default_job_run)
-
-# COMMAND ----------
-
-visualization.compare_features(jobs=[job_run],default=default_job_run)
 
 # COMMAND ----------
 
@@ -345,7 +319,7 @@ job_name = 'set_holiday_column'
 configuration = deepcopy(auto_forecasting_configuration)
 configuration['engine']['holiday_column'] = "IsPublicHoliday"
 # ------------------------------------------------------------------------------------------------------------
-job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
 
 # COMMAND ----------
 
@@ -413,7 +387,7 @@ for setting in ['none', 'common', 'close', 'combined']:
     configuration['engine']['prediction_to'] = {'base_unit': 'sample','value': 72}
     configuration['engine']['target_offsets'] = setting
     # ------------------------------------------------------------------------------------------------------------
-    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
     job_runs.append(job_run)
 
 # COMMAND ----------
@@ -462,7 +436,7 @@ for setting in [True,False]:
     configuration = deepcopy(auto_forecasting_configuration)
     configuration['engine']['allow_offsets'] = setting
     # ------------------------------------------------------------------------------------------------------------
-    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
     job_runs.append(job_run)
 
 # COMMAND ----------
@@ -496,7 +470,7 @@ for setting in [True,False]:
     configuration = deepcopy(auto_forecasting_configuration)
     configuration['engine']['normalization'] = setting
     # ------------------------------------------------------------------------------------------------------------
-    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
     job_runs.append(job_run)
 
 # COMMAND ----------
@@ -530,7 +504,7 @@ for setting in [True,False]:
     configuration = deepcopy(auto_forecasting_configuration)
     configuration['engine']['daily_cycle'] = setting
     # ------------------------------------------------------------------------------------------------------------
-    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
     job_runs.append(job_run)
 
 # COMMAND ----------
@@ -564,7 +538,7 @@ for setting in [3,30,300]:
     configuration = deepcopy(auto_forecasting_configuration)
     configuration['engine']['max_feature_count'] = setting
     # ------------------------------------------------------------------------------------------------------------
-    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
     job_runs.append(job_run)
 
 # COMMAND ----------
@@ -598,7 +572,7 @@ for setting in [0,-12,-100]:
     configuration = deepcopy(auto_forecasting_configuration)
     configuration['engine']['offset_limit'] = setting
     # ------------------------------------------------------------------------------------------------------------
-    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
     job_runs.append(job_run)
 
 # COMMAND ----------
@@ -684,7 +658,7 @@ for setting in transformation_settings:
     if job_name=='one_hot_encoding_on':
         configuration['engine']['categorical_columns'] = [predictors[1]]
     # ------------------------------------------------------------------------------------------------------------
-    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,time_series=tw_timeseries)
+    job_run = configuration_tutorial.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
     job_runs.append(job_run)
 
 # COMMAND ----------

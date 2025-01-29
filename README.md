@@ -1,10 +1,11 @@
 # Tangent Databricks  
   
-This repo contains two folders:
+This repo contains three folders:
 - tutorial: &emsp;&emsp;Contains all data and notebooks to learn about Tangent.
+- examples: &emsp;Contains data and notebooks from different example use cases.
 - other:&emsp;&emsp;&emsp;Contains the "init" script to run with your cluster.
 
-In this overview you will find the notebooks that will guide you through the use of Tangent and all its capabilities.
+In this overview you will find the Tutorial notebooks that will guide you through the use of Tangent and all its capabilities.
 - ___General:___
   - __101 Introduction__:  
 &emsp;Learn about Tangent and get started with this tutorial.
@@ -20,17 +21,17 @@ In this overview you will find the notebooks that will guide you through the use
 - ___Settings:___
   - __301 Mathematical Settings__:  
 &emsp;Learn about the different mathematical settings that can be applied in Tangent.  
-- ___Working at scale:___
-  - __401 Forecasting with Spark__:  
-&emsp;Learn to combine Spark and Tangent to build Forecasting models at scale.
-  - __402 AnomalyDetection with Spark__:  
-&emsp;Learn to combine Spark and Tangent to build AnomalyDetection models at scale.
-  - __403 AutoForecasting with Spark__:  
-&emsp;Learn to combine Spark and Tangent to build AutoForecasting models at scale.
-- ___Results analysis:___
-  - __501 Backtesting__:  
-&emsp;Learn how to perform a backtest with Tangent.
-  - __502 Simulation__:  
-&emsp;Learn about simulations and how they provide a complete insight in the performance of Tangent.
+  - __302 Context Settings__:  
+&emsp;Learn about the different contextual settings that can be applied to adapt Tangent to your use case. 
 
-version 1.0.0
+Here you will find all the available examples.
+  - __Electricity Price Forecasting__:  
+  &emsp;Peform a day ahead electricity price forecast on hourly data.  
+  - __Gas Consumption Forecasting__:  
+  &emsp;Forecast the consumption of Gas up to a week ahead on hourly data.  
+  - __Grid Load Forecasting__:  
+  &emsp;Forecast the laod on an entire electricity grid.  
+  - __Solar Production Forecasting__:  
+  &emsp;Forecast the production of energy from a single solar production asset.  
+  - __Wind Production Forecasting__:  
+  &emsp;Forecast the production of energy from a single windmill.  

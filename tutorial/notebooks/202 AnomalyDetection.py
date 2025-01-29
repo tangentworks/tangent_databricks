@@ -25,7 +25,7 @@
 
 # COMMAND ----------
 
-import tangent_works as tw
+import tangent_works
 import pandas as pd
 import numpy as np
 
@@ -50,20 +50,20 @@ class visualization:
         fig1 = go.Figure(go.Bar(x=v_data[x_axis], y=v_data[y_axis],text=round(v_data[y_axis],2),textposition='auto'))
         fig1.update_layout(height=500,width=1000,title_text='Predictor Importances',xaxis_title=x_axis,yaxis_title=y_axis)
         print('Predictors not used:'+str(list(df[~(df['importance']>0)]['name'])))
-        fig1.show()
+        fig1.show(renderer='databricks')
 
     def feature_importance(df):
-        fig = px.treemap(df, path=[px.Constant("all"), 'model', 'feature'], values='importance',hover_data='beta',color='feature')
+        fig = px.treemap(df, path=[px.Constant("all"), 'model', 'feature'], values='importance',hover_data=['beta'],color='feature')
         fig.update_traces(root_color="lightgrey")
         fig.update_layout(height=600, width=1000, title_text="Features",margin = dict(t=50, l=25, r=25, b=25))
-        fig.show()
+        fig.show(renderer='databricks')
 
     def data(df,timestamp,target,predictors):
         fig = splt.make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.02)
         fig.add_trace(go.Scatter(x=df[timestamp], y=df[target], name=target,connectgaps=True), row=1, col=1)
         for idx, p in enumerate(predictors): fig.add_trace(go.Scatter(x=df[timestamp], y=df[p], name=p,connectgaps=True), row=2, col=1)
         fig.update_layout(height=600, width=1100, title_text="Data visualization")
-        fig.show()
+        fig.show(renderer='databricks')
 
     def rca(time_series,timestamp_column,target_column,df,rca_tables_df,rca_timestamp,window=48):
         try:
@@ -96,7 +96,7 @@ class visualization:
         fig.layout.sliders = sliders 
         fig.add_vline(x=rca_timestamp, line_dash="dash", line_color="green")
         fig.update_layout(height=600,width=1200,title_text='Model Timestamp Analysis',legend=dict(y=-0.4,x=0.0,orientation='h'))
-        fig.show()
+        fig.show(renderer='databricks')
 
     def detections(df):
         fig = splt.make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.02)
@@ -108,7 +108,7 @@ class visualization:
             fig.add_trace(go.Scatter(x=va['timestamp'], y=va['target'], name=column.replace('anomaly_indicator_','')+' anomaly',mode='markers', line={'color': 'red'}), row=1, col=1)
         fig.add_hline(y=1,row=2,line=dict(color='red'))
         fig.update_layout(height=800, width=1000, title_text="Results")
-        fig.show()
+        fig.show(renderer='databricks')
 
 # COMMAND ----------
 
@@ -163,7 +163,7 @@ visualization.data(df=tangent_dataframe,timestamp=timestamp_column,target=target
 # COMMAND ----------
 
 build_anomaly_detection_configuration = {
-    'normal_behavior':{
+    # 'normal_behavior':{
         # 'target_column':'str',
         # 'holiday_column:':'str',
         # 'target_offsets':'combined',
@@ -199,7 +199,7 @@ build_anomaly_detection_configuration = {
         #         'timestamp': 'yyyy-mm-dd hh:mm:ssZ'
         #     }
         # ],
-    },
+    # },
     'detection_layers': [
         {
             'residuals_transformation':{
@@ -267,21 +267,36 @@ build_anomaly_detection_configuration = {
 
 # COMMAND ----------
 
-time_series = tw.TimeSeries(data=tangent_dataframe)
-time_series.validate()
+tw = tangent_works.TangentWorks()
 
 # COMMAND ----------
 
-tangent_anomaly_detection = tw.AnomalyDetection(time_series=time_series,configuration=build_anomaly_detection_configuration)
+tw_ad_model = tw.anomaly_detection.build_model(
+    configuration = build_anomaly_detection_configuration,
+    dataset = tangent_dataframe
+)
 
 # COMMAND ----------
 
-tangent_anomaly_detection.build_model()
-tangent_anomaly_detection_model = tangent_anomaly_detection.model.to_dict()
+# MAGIC %md
+# MAGIC Let's extract the model from the Anomaly Detection model object to get insights in the model building process.
 
 # COMMAND ----------
 
-detect_df = tangent_anomaly_detection.detect()
+tangent_anomaly_detection_model = tw_ad_model.to_dict()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Now we can use this model to generate detections using a dataset with the same format as the one that was used to build the model.  
+# MAGIC In this case we will use the same dataset to generate training results.
+
+# COMMAND ----------
+
+tw_ad_detection = tw.anomaly_detection.detect(
+    dataset = tangent_dataframe,
+    model = tw_ad_model
+)
 
 # COMMAND ----------
 
@@ -296,8 +311,8 @@ detect_df = tangent_anomaly_detection.detect()
 
 # COMMAND ----------
 
-properties_df = tw.PostProcessing().properties(model=tangent_anomaly_detection_model)
-features_df = tw.PostProcessing().features(model=tangent_anomaly_detection_model)
+properties_df = tw.insights.properties(model=tangent_anomaly_detection_model)
+features_df = tw.insights.features(model=tangent_anomaly_detection_model)
 
 # COMMAND ----------
 
@@ -320,7 +335,7 @@ features_df = tw.PostProcessing().features(model=tangent_anomaly_detection_model
 
 # COMMAND ----------
 
-visualization.detections(detect_df)
+visualization.detections(tw_ad_detection)
 
 # COMMAND ----------
 
@@ -364,7 +379,18 @@ visualization.feature_importance(features_df)
 
 # COMMAND ----------
 
-tangent_rca = tangent_anomaly_detection.rca()
+ad_rca_config = {
+    'model_indexes':[
+    ]
+}
+
+# COMMAND ----------
+
+tangent_rca = tw.anomaly_detection.rca(
+    configuration = ad_rca_config,
+    dataset = tangent_dataframe,
+    model = tw_ad_model.normal_behavior_model
+)
 
 # COMMAND ----------
 
@@ -392,12 +418,8 @@ visualization.rca(
     time_series=tangent_dataframe,
     timestamp_column=timestamp_column,
     target_column=target_column,
-    df=detect_df,
+    df=tw_ad_detection,
     rca_tables_df=rca_tables_df,
     rca_timestamp=rca_timestamp,
     window=window
     )
-
-# COMMAND ----------
-
-

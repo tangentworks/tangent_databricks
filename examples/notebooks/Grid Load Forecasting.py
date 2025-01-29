@@ -9,9 +9,13 @@
 
 # COMMAND ----------
 
-import tangent_works as tw
+import tangent_works
 import pandas as pd
 import numpy as np
+
+# COMMAND ----------
+
+tw = tangent_works.TangentWorks()
 
 # COMMAND ----------
 
@@ -29,13 +33,13 @@ class visualization:
         fig1 = go.Figure(go.Bar(x=v_data[x_axis], y=v_data[y_axis],text=round(v_data[y_axis],2),textposition='auto'))
         fig1.update_layout(height=500,width=1000,title_text='Predictor Importances',xaxis_title=x_axis,yaxis_title=y_axis)
         print('Predictors not used:'+str(list(df[~(df['importance']>0)]['name'])))
-        fig1.show()
+        fig1.show(renderer='databricks')
 
     def feature_importance(df):
-        fig = px.treemap(df, path=[px.Constant("all"), 'model', 'feature'], values='importance',hover_data='beta',color='feature')
+        fig = px.treemap(df, path=[px.Constant("all"), 'model', 'feature'], values='importance',hover_data=['beta'],color='feature')
         fig.update_traces(root_color="lightgrey")
         fig.update_layout(height=600, width=1000, title_text="Features",margin = dict(t=50, l=25, r=25, b=25))
-        fig.show()
+        fig.show(renderer='databricks')
 
     def predictions(df):
         fig = splt.make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
@@ -45,14 +49,14 @@ class visualization:
             v_data = df[df['type']==forecasting_type].copy()
             fig.add_trace(go.Scatter(x=v_data['timestamp'], y=v_data['forecast'], name=forecasting_type,line=dict(color=color_map[forecasting_type])), row=1, col=1)
         fig.update_layout(height=500, width=1000, title_text="Results")
-        fig.show()
+        fig.show(renderer='databricks')
 
     def data(df,timestamp,target,predictors):
         fig = splt.make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.02)
         fig.add_trace(go.Scatter(x=df[timestamp], y=df[target], name=target,connectgaps=True), row=1, col=1)
         for idx, p in enumerate(predictors): fig.add_trace(go.Scatter(x=df[timestamp], y=df[p], name=p,connectgaps=True), row=2, col=1)
         fig.update_layout(height=600, width=1100, title_text="Data visualization")
-        fig.show()
+        fig.show(renderer='databricks')
 
     def rca(time_series,timestamp_column,target_column,df,rca_tables_df,rca_timestamp,window=48):
         try:
@@ -85,7 +89,7 @@ class visualization:
         fig.layout.sliders = sliders 
         fig.add_vline(x=rca_timestamp, line_dash="dash", line_color="green")
         fig.update_layout(height=600,width=1200,title_text='Model Timestamp Analysis',legend=dict(y=-0.4,x=0.0,orientation='h'))
-        fig.show()
+        fig.show(renderer='databricks')
 
 # COMMAND ----------
 
@@ -185,11 +189,12 @@ auto_forecasting_configuration = {
 
 # COMMAND ----------
 
-time_series = tw.TimeSeries(tangent_dataframe, timestamp_column)
-time_series.validate()
-tangent_auto_forecast = tw.AutoForecasting(time_series=time_series, configuration=auto_forecasting_configuration)
-tangent_auto_forecast.run()
+tangent_auto_forecast = tw.forecasting.auto_forecast(configuration=auto_forecasting_configuration,dataset=tangent_dataframe)
+
+# COMMAND ----------
+
 tangent_auto_forecast_model = tangent_auto_forecast.model.to_dict()
+tangent_auto_forecast_predictions = tangent_auto_forecast.predictions
 
 # COMMAND ----------
 
@@ -198,9 +203,8 @@ tangent_auto_forecast_model = tangent_auto_forecast.model.to_dict()
 
 # COMMAND ----------
 
-properties_df = tw.PostProcessing().properties(model=tangent_auto_forecast_model)
-features_df = tw.PostProcessing().features(model=tangent_auto_forecast_model)
-result_table_df = tw.PostProcessing().result_table(forecasting=tangent_auto_forecast)
+properties_df = tw.insights.properties(model=tangent_auto_forecast_model)
+features_df = tw.insights.features(model=tangent_auto_forecast_model)
 
 # COMMAND ----------
 
@@ -209,7 +213,7 @@ result_table_df = tw.PostProcessing().result_table(forecasting=tangent_auto_fore
 
 # COMMAND ----------
 
-visualization.predictions(result_table_df)
+visualization.predictions(tangent_auto_forecast_predictions)
 
 # COMMAND ----------
 

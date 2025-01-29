@@ -45,17 +45,25 @@
 
 # MAGIC %md
 # MAGIC Let's test if the Tangent is running by trying out a simple example with synthetic data.  
-# MAGIC First import the __tangent_works__ package as tw. Import Pandas as well to manage the the input data.
+# MAGIC First import the __tangent_works__ package an activate the class TangentWorks. Import Pandas as well to manage the the input data.
 
 # COMMAND ----------
 
-import tangent_works as tw
+import tangent_works
 import pandas as pd
+
+# COMMAND ----------
+
+tw = tangent_works.TangentWorks()
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC Create the synthetic dataset and form a Pandas dataframe to use as example input data.
+# MAGIC To make sure the engine will be able to make calculations, we need a Pandas dataframe in the right format.  
+# MAGIC
+# MAGIC Typically, you would organise your data by placing the timestamp values in the first column, in the second column the values that you want to model and all following columns can be any value that you believe might have predictive value and should be analyzed by Tangent.  
+# MAGIC Make sure the timestamp column is in 'datetime' format.
 
 # COMMAND ----------
 
@@ -95,51 +103,28 @@ target_column = "target"
 predictors = [s for s in list(tangent_dataframe.columns) if s not in group_keys + [timestamp_column, target_column]]
 tangent_dataframe = tangent_dataframe[group_keys + [timestamp_column, target_column] + predictors].sort_values(by=group_keys + [timestamp_column]).reset_index(drop=True)
 tangent_dataframe[timestamp_column] = pd.to_datetime(pd.to_datetime(tangent_dataframe[timestamp_column]).dt.strftime("%Y-%m-%d %H:%M:%S"))
-
-# COMMAND ----------
-
 tangent_dataframe
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The next step is to validate the time series data. To make sure the engine will be able to make calculations, we need a Pandas dataframe in the right format.  
-# MAGIC Typically, you would organise your data by placing the timestamp values in the first column, in the second column the values that you want to model and all following columns can be any value that you believe might have predictive value and should be analyzed by Tangent.  
-# MAGIC Make sure the timestamp column is in 'datetime' format.
-
-# COMMAND ----------
-
-tw_timeseries = tw.TimeSeries(data=tangent_dataframe,timestamp_column='timestamp')
-
-# COMMAND ----------
-
-tw_timeseries.validate()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC Tangent works by combining a dataset and a configuration, telling the engine what to do with the dataset, together to generate results.  
-# MAGIC The next step is to bring both together in an object to validate the setup of the experiment with Tangent. Here we will use the Autoforecasting capabilities and use the default configuration settings by leaving the configuration empty.  
+# MAGIC Tangent works by combining a dataset and a configuration together, telling the engine what to do with the dataset and generate results.  
+# MAGIC Here we will use the Autoforecasting capabilities and use the default configuration settings by setting an empty dictionary.  
 # MAGIC By not adding any specific configuration settings, Tangent will decide based on the data, which settings are best applied.  
 # MAGIC Tangent is designed to automated as much as possible and by using default settings, the user can let Tangent make data driven decisions to come to the best results.
 
 # COMMAND ----------
 
-
-tw_autoforecasting = tw.AutoForecasting(
-    time_series = tw_timeseries,
-    # configuration = {}
-)
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC With everything set up correctly, the user can send a "run" request to Tangent to start calculations and build the model and predictions.  
+# MAGIC With everything set up correctly, the user can send an "auto_forecast" request to Tangent to start calculations and build the model and predictions.  
 # MAGIC Depending on the configuration and the size of the dataset, typical jobs take mere seconds to a couple of minutes at most to complete.
 
 # COMMAND ----------
 
-tw_autoforecasting.run()
+tw_autoforecasting = tw.forecasting.auto_forecast(
+    configuration={},
+    dataset=tangent_dataframe
+    )
 
 # COMMAND ----------
 
@@ -148,8 +133,8 @@ tw_autoforecasting.run()
 
 # COMMAND ----------
 
-tangent_results_table = tw_autoforecasting.result_table
-tangent_auto_forecast_model = tw_autoforecasting.model.to_dict()
+auto_forecast_predictions = tw_autoforecasting.predictions
+auto_forecast_model = tw_autoforecasting.model
 
 # COMMAND ----------
 
@@ -158,16 +143,16 @@ tangent_auto_forecast_model = tw_autoforecasting.model.to_dict()
 
 # COMMAND ----------
 
-tangent_results_table
+auto_forecast_predictions
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The model is returned as a JSON. This object can be used with other functionalities of Tangent to generate new predictions or gain new insights in the results.
+# MAGIC The model is returned as a ForecastingModel object and can be transformed into a JSON using .to_dict(). This object can be used with other functionalities of Tangent to generate new predictions or gain new insights in the results.
 
 # COMMAND ----------
 
-tangent_auto_forecast_model
+auto_forecast_model.to_dict()
 
 # COMMAND ----------
 

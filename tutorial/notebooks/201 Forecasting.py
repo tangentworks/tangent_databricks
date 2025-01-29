@@ -25,7 +25,7 @@
 
 # COMMAND ----------
 
-import tangent_works as tw
+import tangent_works
 import pandas as pd
 import numpy as np
 
@@ -50,13 +50,13 @@ class visualization:
         fig1 = go.Figure(go.Bar(x=v_data[x_axis], y=v_data[y_axis],text=round(v_data[y_axis],2),textposition='auto'))
         fig1.update_layout(height=500,width=1000,title_text='Predictor Importances',xaxis_title=x_axis,yaxis_title=y_axis)
         print('Predictors not used:'+str(list(df[~(df['importance']>0)]['name'])))
-        fig1.show()
+        fig1.show(renderer='databricks')
 
     def feature_importance(df):
-        fig = px.treemap(df, path=[px.Constant("all"), 'model', 'feature'], values='importance',hover_data='beta',color='feature')
+        fig = px.treemap(df, path=[px.Constant("all"), 'model', 'feature'], values='importance',hover_data=['beta'],color='feature')
         fig.update_traces(root_color="lightgrey")
         fig.update_layout(height=600, width=1000, title_text="Features",margin = dict(t=50, l=25, r=25, b=25))
-        fig.show()
+        fig.show(renderer='databricks')
 
     def predictions(df):
         fig = splt.make_subplots(rows=1, cols=1, shared_xaxes=True, vertical_spacing=0.02)
@@ -66,14 +66,14 @@ class visualization:
             v_data = df[df['type']==forecasting_type].copy()
             fig.add_trace(go.Scatter(x=v_data['timestamp'], y=v_data['forecast'], name=forecasting_type,line=dict(color=color_map[forecasting_type])), row=1, col=1)
         fig.update_layout(height=500, width=1000, title_text="Results")
-        fig.show()
+        fig.show(renderer='databricks')
 
     def data(df,timestamp,target,predictors):
         fig = splt.make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.02)
         fig.add_trace(go.Scatter(x=df[timestamp], y=df[target], name=target,connectgaps=True), row=1, col=1)
         for idx, p in enumerate(predictors): fig.add_trace(go.Scatter(x=df[timestamp], y=df[p], name=p,connectgaps=True), row=2, col=1)
         fig.update_layout(height=600, width=1100, title_text="Data visualization")
-        fig.show()
+        fig.show(renderer='databricks')
 
     def rca(time_series,timestamp_column,target_column,df,rca_tables_df,rca_timestamp,window=48):
         try:
@@ -106,7 +106,7 @@ class visualization:
         fig.layout.sliders = sliders 
         fig.add_vline(x=rca_timestamp, line_dash="dash", line_color="green")
         fig.update_layout(height=600,width=1200,title_text='Model Timestamp Analysis',legend=dict(y=-0.4,x=0.0,orientation='h'))
-        fig.show()
+        fig.show(renderer='databricks')
 
 # COMMAND ----------
 
@@ -161,7 +161,7 @@ visualization.data(df=tangent_dataframe,timestamp=timestamp_column,target=target
 # COMMAND ----------
 
 build_model_configuration = {
-    # 'target_column': 'string',
+    'target_column': 'Sales',
     # 'categorical_columns': [
     #     'string'
     # ],
@@ -245,29 +245,19 @@ predict_configuration = {
 
 # MAGIC %md
 # MAGIC In this section, the following steps take place:
-# MAGIC 1. Create and validate a Tangent time series object
-# MAGIC 2. Create a Forecasting object by combining a time series and model building configuration.
-# MAGIC 3. Send a model building request by applying the "build_model" function.
-# MAGIC 4. Send a forecast request by applying the "forecast" function and using the predict configuration.
+# MAGIC 1. Send a model building request by applying the "build_model" function.
+# MAGIC 2. Send a forecast request by applying the "predict" function and using the predict configuration.
 
 # COMMAND ----------
 
-time_series = tw.TimeSeries(data= tangent_dataframe, timestamp_column=timestamp_column)
-time_series.validate()
+tw = tangent_works.TangentWorks()
 
 # COMMAND ----------
 
-tangent_forecast = tw.Forecasting(time_series=time_series,configuration = build_model_configuration)
-
-# COMMAND ----------
-
-tangent_forecast.build_model()
-
-# COMMAND ----------
-
-tangent_predictions = tangent_forecast.forecast(
-    configuration=predict_configuration
-    )
+build_model_response = tw.forecasting.build_model(
+    configuration = build_model_configuration,
+    dataset = tangent_dataframe
+)
 
 # COMMAND ----------
 
@@ -276,7 +266,21 @@ tangent_predictions = tangent_forecast.forecast(
 
 # COMMAND ----------
 
-tangent_forecast_model = tangent_forecast.model.to_dict()
+tangent_forecast_model = build_model_response.to_dict()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Now we can use this model to generate predictions using a dataset with the same format as the one that was used to build the model.  
+# MAGIC In this case we will use the same dataset to generate training and production results.
+
+# COMMAND ----------
+
+tangent_predictions = tw.forecasting.predict(
+    configuration = predict_configuration,
+    dataset = tangent_dataframe,
+    model = build_model_response
+)
 
 # COMMAND ----------
 
@@ -291,9 +295,14 @@ tangent_forecast_model = tangent_forecast.model.to_dict()
 
 # COMMAND ----------
 
-properties_df = tw.PostProcessing().properties(model=tangent_forecast_model)
-features_df = tw.PostProcessing().features(model=tangent_forecast_model)
-result_table_df = tw.PostProcessing().result_table(forecasting=tangent_forecast)
+properties_df = tw.insights.properties(model=tangent_forecast_model)
+features_df = tw.insights.features(model=tangent_forecast_model)
+
+# COMMAND ----------
+
+train_from = pd.to_datetime(tangent_forecast_model['model_zoo']['training_periods'][0]['datetime_from'])
+train_to = pd.to_datetime(tangent_forecast_model['model_zoo']['training_periods'][0]['datetime_to'])
+tangent_predictions['type'] = np.where((train_from<=tangent_predictions['timestamp'])&(tangent_predictions['timestamp']<=train_to), 'training', 'production')
 
 # COMMAND ----------
 
@@ -316,7 +325,7 @@ result_table_df = tw.PostProcessing().result_table(forecasting=tangent_forecast)
 
 # COMMAND ----------
 
-visualization.predictions(result_table_df)
+visualization.predictions(tangent_predictions)
 
 # COMMAND ----------
 
@@ -364,7 +373,18 @@ visualization.feature_importance(features_df)
 
 # COMMAND ----------
 
-tangent_forecast_rca = tangent_forecast.rca()
+fc_rca_config = {
+    'model_indexes':[
+    ]
+}
+
+# COMMAND ----------
+
+tangent_forecast_rca = tw.forecasting.rca(
+    configuration = fc_rca_config,
+    dataset = tangent_dataframe,
+    model = build_model_response
+)
 
 # COMMAND ----------
 

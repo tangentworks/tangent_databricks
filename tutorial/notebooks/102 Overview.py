@@ -20,7 +20,7 @@
 
 # COMMAND ----------
 
-import tangent_works as tw
+import tangent_works
 import pandas as pd
 
 # COMMAND ----------
@@ -99,162 +99,71 @@ tangent_dataframe[timestamp_column] = pd.to_datetime(pd.to_datetime(tangent_data
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC This section will explain all the functionalities of the Python package that communicate with the Tangent Core.
+# MAGIC This section will explain all the functionalities of the Python package that communicate with the Tangent Core.  
+# MAGIC To access all functionalities, active the package such as below.
+
+# COMMAND ----------
+
+tw = tangent_works.TangentWorks()
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 2.1 TimeSeries
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.1.1 class
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The TimeSeries class creates a time series object that is ready to be analyzed by Tangent.  
-# MAGIC The purpose of this class is to validate the format of the data.  
-# MAGIC It requires a pandas dataframe with time series data and the user can optionally describe which column is the timestamp column and which columns are the group_keys for panel data.
-
-# COMMAND ----------
-
-tw_timeseries = tw.TimeSeries(
-    data = tangent_dataframe,
-    # timestamp_column = timestamp_column,
-    # group_key_columns = []
-    )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.1.2 validate
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC This function validates the correctness of the dataset. It looks at column names and types, timestamps and datapoints to make sure this timeseries object will be able to pass through Tangent.
-
-# COMMAND ----------
-
-tw_timeseries.validate(
-    # inplace = True
-    )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.1.3 validate_timestamps_alignment
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC This function validates the alignment of timestamps across all columns with respect to the sampling period. It makes sure the data situation in the time series is correctly setup.
-
-# COMMAND ----------
-
-tw_timeseries.validate_timestamps_alignment(
-    # inplace = True
-)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.1.4 time_scaling
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC With this function the user can rescale the data to a desired sampling rate and user several aggregation methods to be applied across all variables as well as individually.
-
-# COMMAND ----------
-
-time_scaling_configuration = {
-    'time_scale': {
-        'base_unit': 'hour',
-        'value': 2
-        },
-    'aggregations': {
-        'common': 'mean',
-        # 'individual': [
-        #     {
-        #         'column_name':'string',
-        #         'value':'mean'
-        #         }
-        #     ]
-        }
-}
-
-# COMMAND ----------
-
-tw_timeseries_time_scaled =  tw_timeseries.time_scaling(configuration=time_scaling_configuration)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.1.5 imputation
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC With this function the user can impute missing values in the data and fill gaps in the records.
-# MAGIC
-
-# COMMAND ----------
-
-imputation_configuration = {
-    'common': {
-        'type': 'linear',
-        'max_gap_length': 6
-        },
-    # 'individual': [
-    #     {
-    #         'column_name': 'string',
-    #         'value': {
-    #             'type': 'linear',
-    #             'max_gap_length': 0
-    #             }
-    #         }
-    #     ]
-}
-
-# COMMAND ----------
-
-tw_timeseries_imputed =  tw_timeseries.imputation(configuration=imputation_configuration)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## 2.2 Forecasting
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The first capability of Tangent is to build and use forecasting models.  
-# MAGIC The following functions for forecasting are available in the Tangent Python package.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.2.1 configurations
+# MAGIC The package is divide into 3 subclasses with each their respective methods:
+# MAGIC - forecasting 
+# MAGIC   - build_model
+# MAGIC   - predict
+# MAGIC   - rca
+# MAGIC   - auto_forecast
+# MAGIC - anomaly Detection
+# MAGIC   - build_model
+# MAGIC   - detect
+# MAGIC   - rca
+# MAGIC - insights
+# MAGIC   - properties
+# MAGIC   - features
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC Tangent is designed to automate as much as possible in the modeling process.  
 # MAGIC There are however configuration settings that you can apply.  
-# MAGIC Below you will find the configuration settings for the different functions.  
-# MAGIC When specific settings are not included, Tangent will assume default settings and decide automatically which settings to apply in the model building process.
+# MAGIC For each method you will find example configuration settings with all possible parameters..  
+# MAGIC When specific parameters are not set, Tangent will assume default settings and decide automatically which settings to apply in the process.
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### 2.2.1.1 build_model
+# MAGIC ## 2.1 Forecasting
 
 # COMMAND ----------
 
-build_model_configuration = {
+# MAGIC %md
+# MAGIC The first capability of Tangent is to build and use forecasting models.  
+# MAGIC The following functions for forecasting are available in the Tangent Python package.
+# MAGIC - build_model
+# MAGIC - predict
+# MAGIC - rca
+# MAGIC - auto_forecast
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.1.1 build_model
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The build model function sends a job request to Tangent to build a forecasting model with a prepared time series and configuration. This method returns a Tangent forecasting model.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Configuration
+
+# COMMAND ----------
+
+fc_build_model_configuration = {
     # 'target_column': 'string',
     # 'categorical_columns': [
     #     'string'
@@ -304,11 +213,43 @@ build_model_configuration = {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### 2.2.1.2 predict
+# MAGIC #### Usage
 
 # COMMAND ----------
 
-predict_configuration = {
+tw_fc_model = tw.forecasting.build_model(
+    configuration = fc_build_model_configuration,
+    dataset = tangent_dataframe
+)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Output
+
+# COMMAND ----------
+
+tw_fc_model
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.1.2 predict
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The predict function applies data to a Tangent forecasting model to generate predicted values. 
+# MAGIC The user can specify a predict_configuration and a dataset. Both should correspond with the configuration used during the model building process.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Configuration
+
+# COMMAND ----------
+
+fc_predict_configuration = {
     # 'prediction_from': {
     #     'base_unit': 'sample',
     #     'value': 1
@@ -333,72 +274,29 @@ predict_configuration = {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### 2.2.1.3 rca
+# MAGIC #### Usage
 
 # COMMAND ----------
 
-forecasting_rca_configuration = [
-    # 1
-]
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.2.2 class
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The Forecasting class validates the build_model configuration and brings it together with the time series in one object.  
-# MAGIC With the resulting object, models, predictions and other analysis can be made.
-
-# COMMAND ----------
-
-tw_forecasting = tw.Forecasting(
-    time_series = tw_timeseries,
-    configuration = build_model_configuration
+tw_fc_predictions = tw.forecasting.predict(
+    configuration = fc_predict_configuration,
+    dataset = tangent_dataframe,
+    model = tw_fc_model
 )
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2.2.3 build_model
+# MAGIC #### Output
+
+# COMMAND ----------
+
+tw_fc_predictions
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The build model function sends a job request to Tangent to build a forecasting model using the time series and configuration shared in the Forecasting object. The model is returned into the object.
-
-# COMMAND ----------
-
-tw_forecasting.build_model(
-    # inplace = True
-)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.2.4 forecast
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The forecast function uses the same Forecasting object as the build model.  
-# MAGIC By default it will reuse the configuration and time series of the build_model.
-# MAGIC The user can specify a predict_configuration to use the model and change the output.
-# MAGIC The user can also add a new time series to apply a built model to new data.
-
-# COMMAND ----------
-
-tangent_predictions = tw_forecasting.forecast(
-  # configuration = predict_configuration,
-  # time_series = tw_timeseries,
-  )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.2.5 rca
+# MAGIC ### 2.1.3 rca
 
 # COMMAND ----------
 
@@ -409,55 +307,60 @@ tangent_predictions = tw_forecasting.forecast(
 
 # COMMAND ----------
 
-tw_forecasting_rca = tw_forecasting.rca(
-  # configuration = forecasting_rca_configuration
-)
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC ### 2.2.6 outputs
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The following outputs can be extracted from the Forecasting object. 
-# MAGIC - result_table: which contains the predictions
-# MAGIC - model: which can be analyzed for time series insights
-# MAGIC - configuration: which contains the configuration used. This is helpful for tracing back how the model was built.
-# MAGIC - time_series: which contains the time series sent to Tangent. This is helpful for tracing back how the model was built.
-# MAGIC - rca_table: if RCA was applied, the results can be found here.
-
-# COMMAND ----------
-
-tw_forecasting_result_table = tw_forecasting.result_table
-tw_forecasting_model = tw_forecasting.model.to_dict()
-tw_forecasting_configuration = tw_forecasting.configuration.to_dict()
-tw_forecasting_time_series = tw_forecasting.time_series
-tw_forecasting_rca_table = tw_forecasting.rca_table
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## 2.3 AutoForecasting
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC AutoForecasting is an extended capability that builds on Forecasting.  
-# MAGIC It combines the steps of preprocessing, model building and prediction into one capability.  
-# MAGIC It helps the user with accelerating their timeseries analysis by simplying the process of setting up a forecast.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.3.1 configuration
+# MAGIC #### Configuration
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC Many configuration settings of Forecasting can be found again here in AutoForecasting.  
 # MAGIC Additional preprocessing functionalities are added to the list of potential configuration settings.
+
+# COMMAND ----------
+
+fc_rca_configuration = {
+    'model_indexes':[
+    ]
+}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Usage
+
+# COMMAND ----------
+
+tw_forecasting_rca = tw.forecasting.rca(
+    dataset=tangent_dataframe,
+    model = tw_fc_model,
+    configuration = fc_rca_configuration
+)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Output
+
+# COMMAND ----------
+
+tw_forecasting_rca
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.1.4 auto_forecast
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC AutoForecasting is an extended capability that builds on forecasting.  
+# MAGIC It combines the steps of preprocessing, model building and prediction into one capability.  
+# MAGIC It helps the user with accelerating their timeseries analysis by simplifying the process of setting up a forecast.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Configuration
 
 # COMMAND ----------
 
@@ -527,89 +430,58 @@ auto_forecasting_configuration = {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2.3.2 class
+# MAGIC #### Usage
+
+# COMMAND ----------
+
+tw_fc_auto_forecast = tw.forecasting.auto_forecast(
+    configuration = auto_forecasting_configuration,
+    dataset = tangent_dataframe
+)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The AutoForecasting class is also activated with a Tangent time series and a configuration.  
-# MAGIC This validates the right setup for running a autoforecasting job.
+# MAGIC #### Output
 
 # COMMAND ----------
 
-tw_autoforecasting = tw.AutoForecasting(
-    time_series = tw_timeseries,
-    configuration = auto_forecasting_configuration
-    )
+tw_fc_auto_forecast_model = tw_fc_auto_forecast.model
+tw_fc_auto_forecast_model
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ### 2.3.3 run
+tw_fc_auto_forecast_predictions = tw_fc_auto_forecast.predictions
+tw_fc_auto_forecast_predictions
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC To preprocess the data, build a model and generate predictions in one step, the following function can be executed.
-
-# COMMAND ----------
-
-tw_autoforecasting.run()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.3.4 rca
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC With Root Cause Analysis (RCA), the user can go in depth into the features created by Tangent.
-# MAGIC The user can access this information using the rca function on the AutoForecasting object. 
-# MAGIC The user can choose to extract the results from specific models in the model zoo if there are multiple.
-
-# COMMAND ----------
-
-tw_autoforecasting_rca = tw_autoforecasting.rca()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.3.5 outputs
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The following outputs can be extracted from the AutoForecasting object. 
-# MAGIC - result_table: which contains the predictions
-# MAGIC - model: which can be analyzed for time series insights
-# MAGIC - configuration: which contains the configuration used. This is helpful for tracing back how the model was built.
-# MAGIC - time_series: which contains the time series sent to Tangent. This is helpful for tracing back how the model was built.
-# MAGIC - rca_table: if RCA was applied, the results can be found here.
-
-# COMMAND ----------
-
-tw_autoforecasting_result_table = tw_autoforecasting.result_table
-tw_autoforecasting_model = tw_autoforecasting.model.to_dict()
-tw_autoforecasting_configuration = tw_autoforecasting.configuration.to_dict()
-tw_autoforecasting_time_series = tw_autoforecasting.time_series
-tw_autoforecasting_rca_table = tw_autoforecasting.rca_table
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## 2.4 AnomalyDetection
+# MAGIC ## 2.2 Anomaly Detection
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC The another capability of Tangent is to build and use anomaly detection models.  
 # MAGIC The following functions for detection are available in the Tangent Python package.
+# MAGIC - build_model
+# MAGIC - detect
+# MAGIC - rca
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2.4.1 configurations
+# MAGIC ### 2.2.1 build_model
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The build model function sends a job request to Tangent to build an anomaly detection model with a prepared time series and configuration. This method returns a Tangent anomaly detection model.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Configuration
 
 # COMMAND ----------
 
@@ -620,9 +492,9 @@ tw_autoforecasting_rca_table = tw_autoforecasting.rca_table
 
 # COMMAND ----------
 
-build_anomaly_detection_configuration = {
-    'normal_behavior':{
-        # 'target_column':'str',
+ad_build_model_config = {
+    # 'normal_behavior':{
+        # 'target_column':target_column,
         # 'holiday_column:':'str',
         # 'target_offsets':'combined',
         # 'allow_offsets':True,
@@ -657,7 +529,7 @@ build_anomaly_detection_configuration = {
         #         'timestamp': 'yyyy-mm-dd hh:mm:ssZ'
         #     }
         # ],
-    },
+    # },
     # 'detection_layers': [
     #     {
     #         'residuals_transformation':{
@@ -712,112 +584,125 @@ build_anomaly_detection_configuration = {
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2.4.2 class
+# MAGIC #### Usage
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC The AnomalyDetection class validates the build_model configuration and brings it together with the time series in one object.  
-# MAGIC With the resulting object, models, detections and other analysis can be made.
-
-# COMMAND ----------
-
-tw_anomaly_detection = tw.AnomalyDetection(
-    time_series = tw_timeseries,
-    configuration = build_anomaly_detection_configuration
-    )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.4.3 build_model
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The build model function sends a job request to Tangent to build a anomaly detection model using the time series and configuration shared in the AnomalyDetection object. The model is returned into the object.
-
-# COMMAND ----------
-
-tw_anomaly_detection.build_model()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### 2.4.4 detect
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The detect function uses the same AnomalyDetection object as the build model.  
-# MAGIC By default it will reuse the configuration and time series of the build_model.  
-# MAGIC The user can add a new time series to apply a built model to new data.
-
-# COMMAND ----------
-
-detect_df = tw_anomaly_detection.detect(
-    time_series = tw_timeseries
+tw_ad_model = tw.anomaly_detection.build_model(
+    configuration = ad_build_model_config,
+    dataset = tangent_dataframe
 )
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2.4.5 rca
+# MAGIC #### Output
+
+# COMMAND ----------
+
+tw_ad_model
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.2.2 detect
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC The detect function applies data to a Tangent forecasting model to generate predicted values. 
+# MAGIC The user can't specify a configuration since the same configuration as the model building has to be applied.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Usage
+
+# COMMAND ----------
+
+tw_ad_detection = tw.anomaly_detection.detect(
+    dataset = tangent_dataframe,
+    model = tw_ad_model
+)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Output
+
+# COMMAND ----------
+
+tw_ad_detection
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.2.3 rca
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC With Root Cause Analysis (RCA), the user can go in depth into the features created by Tangent.
-# MAGIC The user can access this information using the rca function on the AnomalyDetection object. 
+# MAGIC The user can access this information using the rca function. 
 # MAGIC The user can choose to extract the results from specific models in the model zoo if there are multiple.
 
 # COMMAND ----------
 
-tw_anomaly_detection_rca = tw_anomaly_detection.rca(
-  # configuration = [1]
+# MAGIC %md
+# MAGIC #### Configuration
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Many configuration settings of Forecasting can be found again here in AutoForecasting.  
+# MAGIC Additional preprocessing functionalities are added to the list of potential configuration settings.
+
+# COMMAND ----------
+
+ad_rca_config = {
+    'model_indexes':[
+    ]
+}
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Usage
+
+# COMMAND ----------
+
+tw_ad_rca = tw.anomaly_detection.rca(
+    configuration = ad_rca_config,
+    dataset = tangent_dataframe,
+    model = tw_ad_model.normal_behavior_model
 )
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2.4.6 outputs
+# MAGIC #### Output
+
+# COMMAND ----------
+
+tw_ad_rca
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The following outputs can be extracted from the AnomalyDetection object. 
-# MAGIC - result_table: which contains the detections
-# MAGIC - model: which can be analyzed for time series insights
-# MAGIC - configuration: which contains the configuration used. This is helpful for tracing back how the model was built.
-# MAGIC - time_series: which contains the time series sent to Tangent. This is helpful for tracing back how the model was built.
-# MAGIC - rca_table: if RCA was applied, the results can be found here.
-
-# COMMAND ----------
-
-tw_anomaly_detection_result_table = tw_anomaly_detection.result_table
-tw_anomaly_detection_model = tw_anomaly_detection.model.to_dict()
-tw_anomaly_detection_configuration = tw_anomaly_detection.configuration.to_dict()
-tw_anomaly_detection_time_series = tw_anomaly_detection.time_series
-tw_anomaly_detection_rca_table = tw_anomaly_detection.rca_table
+# MAGIC ## 2.3. Insights
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # 3. PostProcessing
+# MAGIC This section will explain the different capabilities to facilitate getting insights from Tangent results.  
+# MAGIC The following functions for insights are available in the Tangent Python package.
+# MAGIC - properties
+# MAGIC - features
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC This section will explain the different post processing capabilities to facilitate getting insights from Tangent results.
-
-# COMMAND ----------
-
-tw_post_processing = tw.PostProcessing()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## 3.1 Properties
+# MAGIC ### 2.3.1 Properties
 
 # COMMAND ----------
 
@@ -827,12 +712,13 @@ tw_post_processing = tw.PostProcessing()
 
 # COMMAND ----------
 
-tw_properties = tw_post_processing.properties(model=tw_forecasting_model)
+tw_properties = tw.insights.properties(model=tw_fc_model.to_dict())
+tw_properties
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 3.2 Features
+# MAGIC ### 2.3.2 Features
 
 # COMMAND ----------
 
@@ -842,19 +728,5 @@ tw_properties = tw_post_processing.properties(model=tw_forecasting_model)
 
 # COMMAND ----------
 
-tw_features = tw_post_processing.features(model=tw_forecasting_model)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## 3.3 Result table
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC The result table function receives a tangent Forecasting or AutoForecasting object and transforms adds additional information to the result table. 
-# MAGIC With this, the user can quickly identify which timestamps are part of the train set, test set or production forecasts.
-
-# COMMAND ----------
-
-result_table = tw_post_processing.result_table(forecasting=tw_autoforecasting)
+tw_features = tw.insights.features(model=tw_fc_model.to_dict())
+tw_features
