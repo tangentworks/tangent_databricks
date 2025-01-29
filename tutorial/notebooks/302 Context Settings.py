@@ -635,9 +635,10 @@ print("configuration =",json.dumps(configuration, indent=4))
 
 # COMMAND ----------
 
-job_run = user_defined.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
-result_table_df = job_run['result_table']
-properties_df = job_run['properties']
+# ! Under maintenance ! 
+# job_run = user_defined.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
+# result_table_df = job_run['result_table']
+# properties_df = job_run['properties']
 
 # COMMAND ----------
 
@@ -686,9 +687,10 @@ print("configuration =",json.dumps(configuration, indent=4))
 
 # COMMAND ----------
 
-job_run = user_defined.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
-result_table_df = job_run['result_table']
-properties_df = job_run['properties']
+# ! Under maintenance ! 
+# job_run = user_defined.auto_forecast(job_name = job_name,configuration=configuration,dataset=tangent_dataframe)
+# result_table_df = job_run['result_table']
+# properties_df = job_run['properties']
 
 # COMMAND ----------
 
