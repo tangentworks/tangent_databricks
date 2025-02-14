@@ -163,8 +163,8 @@ visualization.data(df=tangent_dataframe,timestamp=timestamp_column,target=target
 # COMMAND ----------
 
 build_anomaly_detection_configuration = {
-    # 'normal_behavior':{
-        # 'target_column':'str',
+    'normal_behavior':{
+        'target_column':target_column,
         # 'holiday_column:':'str',
         # 'target_offsets':'combined',
         # 'allow_offsets':True,
@@ -199,7 +199,7 @@ build_anomaly_detection_configuration = {
         #         'timestamp': 'yyyy-mm-dd hh:mm:ssZ'
         #     }
         # ],
-    # },
+    },
     'detection_layers': [
         {
             'residuals_transformation':{

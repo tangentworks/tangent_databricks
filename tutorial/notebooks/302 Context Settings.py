@@ -641,6 +641,51 @@ properties_df = job_run['properties']
 
 # COMMAND ----------
 
+time_series = tangent_works.utils.time_series.TimeSeries(dataset=tangent_dataframe)
+
+# COMMAND ----------
+
+time_series.dataframe = time_series.dataframe.set_index(time_series.timestamp, drop=False)
+
+# COMMAND ----------
+
+index_filter = time_series.dataframe[time_series.dataframe[time_series.timestamp].notna()].index
+
+# COMMAND ----------
+
+index_filter
+
+# COMMAND ----------
+
+index_filter
+
+# COMMAND ----------
+
+tangent_dataframe.dtypes
+
+# COMMAND ----------
+
+index_filter.to_series().diff().dt.total_seconds()
+
+# COMMAND ----------
+
+missing_rows_counts = index_filter.to_series().diff().dt.total_seconds() / time_series.sampling_period.value - 1
+
+# COMMAND ----------
+
+for i, interval_end in enumerate(index_filter):
+    num_rows_to_insert = missing_rows_counts.iloc[i]
+
+# COMMAND ----------
+
+num_rows_to_insert
+
+# COMMAND ----------
+
+missing_rows_counts[1]
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC In the graph you will find slight differences in the predicted values compared to the default experiment.
 
