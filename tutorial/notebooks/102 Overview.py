@@ -674,7 +674,7 @@ ad_rca_config = {
 tw_ad_rca = tw.anomaly_detection.rca(
     configuration = ad_rca_config,
     dataset = tangent_dataframe,
-    model = tw_ad_model.normal_behavior_model
+    model = tw_ad_model
 )
 
 # COMMAND ----------
@@ -730,3 +730,59 @@ tw_properties
 
 tw_features = tw.insights.features(model=tw_fc_model.to_dict())
 tw_features
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 2.4. SparkParallelProcessing
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC This section will explain how to leverage the combined capabilities of Tangent and Spark.  
+# MAGIC By using the SparkParallelProcessing class the user can run multiple jobs in parallel to scale up their use of Tangent.
+# MAGIC
+# MAGIC Every Tangent method can be applied to the Spark parallel processer by describing a correct Spark job with the right parameters.  
+# MAGIC Then a list of jobs can be sent to Tangent to be executed simultaneously leveraging Spark RDD's.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC First, activate a Tangent Spark object.
+
+# COMMAND ----------
+
+tw_spark = tangent_works.SparkParallelProcessing(app_name='Example')
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Next, describe an array of Spark jobs by creating a tuple with:
+# MAGIC - a unique identifier
+# MAGIC - a Tangent function (e.g. tw.forecasting.build_model)
+# MAGIC - the inputs for the Tangent function in the shape of a dictionary.
+
+# COMMAND ----------
+
+spark_jobs = []
+for job_id in range(2):
+    parameters = {
+        'dataset':tangent_dataframe,
+        'configuration':{}
+        }
+    spark_job = (
+        job_id,
+        tw.forecasting.build_model,
+        parameters
+        )
+    spark_jobs.append(spark_job)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Sent the requests by applying the "run" method on the Tangent Spark object.
+
+# COMMAND ----------
+
+
+tw_parallel_model_building = tw_spark.run(jobs=spark_jobs)

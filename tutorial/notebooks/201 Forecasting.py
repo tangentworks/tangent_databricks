@@ -300,12 +300,6 @@ features_df = tw.insights.features(model=tangent_forecast_model)
 
 # COMMAND ----------
 
-train_from = pd.to_datetime(tangent_forecast_model['model_zoo']['training_periods'][0]['datetime_from'])
-train_to = pd.to_datetime(tangent_forecast_model['model_zoo']['training_periods'][0]['datetime_to'])
-tangent_predictions['type'] = np.where((train_from<=tangent_predictions['timestamp'])&(tangent_predictions['timestamp']<=train_to), 'training', 'production')
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC # 5. Visualization
 
