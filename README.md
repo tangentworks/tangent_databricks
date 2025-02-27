@@ -1,9 +1,8 @@
 # Tangent Databricks  
   
-This repo contains three folders:
+This repo contains 2 folders:
 - tutorial: &emsp;&emsp;Contains all data and notebooks to learn about Tangent.
 - examples: &emsp;Contains data and notebooks from different example use cases.
-- other:&emsp;&emsp;&emsp;Contains the "init" script to run with your cluster.
 
 In this overview you will find the Tutorial notebooks that will guide you through the use of Tangent and all its capabilities.
 - ___General:___
@@ -35,3 +34,6 @@ Here you will find all the available examples.
   &emsp;Forecast the production of energy from a single solar production asset.  
   - __Wind Production Forecasting__:  
   &emsp;Forecast the production of energy from a single windmill.  
+  - __Periodic Rebuilding Simulation__:  
+  &emsp;Learn to rebuild forecast models periodically and apply them continuously.  
+  

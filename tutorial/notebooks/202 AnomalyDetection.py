@@ -389,7 +389,7 @@ ad_rca_config = {
 tangent_rca = tw.anomaly_detection.rca(
     configuration = ad_rca_config,
     dataset = tangent_dataframe,
-    model = tw_ad_model.normal_behavior_model
+    model = tw_ad_model
 )
 
 # COMMAND ----------

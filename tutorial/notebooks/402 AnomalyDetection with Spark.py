@@ -263,13 +263,6 @@ for column in [target_column]+predictors:
 
 # COMMAND ----------
 
-def do_detect(configuration,dataset,model):
-    tw = tangent_works.TangentWorks()
-    prediction = tw.anomaly_detection.detect(configuration,dataset,model)
-    return prediction
-
-# COMMAND ----------
-
 tw_spark = tangent_works.SparkParallelProcessing(app_name='Example')
 spark_jobs = []
 for tangent_job in tangent_jobs:
